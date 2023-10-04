@@ -1,11 +1,24 @@
 const express = require("express");
 const Database = require("../configs/Database");
 const router = express.Router();
+const bcrypt = require("bcrypt");
+const salt = 5;
 
 router.get("/fetch", async (req, res) => {
   const db = new Database();
   const conn = db.connection;
-  const query = "SELECT * FROM register";
+
+  // Obtain the role query parameter from the request
+  const userRole = req.query.role;
+
+  // Modify the SQL query to filter based on the user's role
+  let query = "SELECT * FROM register";
+
+  if (userRole === "student") {
+    query += " WHERE role = 'student'";
+  } else if (userRole === "admin") {
+    query += " WHERE role = 'admin'";
+  }
 
   try {
     await conn.connect();
@@ -22,11 +35,12 @@ router.get("/fetch", async (req, res) => {
   }
 });
 
+
 router.get("/:id", async (req, res) => {
   const { id } = req.params;
   const db = new Database();
   const conn = db.connection;
-  const query = "SELECT * FROM customer_entry WHERE id = ?";
+  const query = "SELECT * FROM register WHERE id = ?";
 
   try {
     await conn.connect();
@@ -75,29 +89,59 @@ router.put('/update/:id', async (req, res) => {
   const db = new Database();
   const conn = db.connection;
 
-  const { id } = req.params;
-  const { Name } = req.body;
-  
-
-  const query = "UPDATE customer_entry SET Name = ? WHERE id = ?";
-  const values = [Name, id];
-
   try {
-    await conn.connect();
+    const { id } = req.params;
+    const { name, username, password, gender, role } = req.body;
 
-    conn.query(query, values, (error, result) => {
-      if (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Error updating customer' });
+    if (!name || !username || !password || !role || !gender) {
+      return res.status(400).json({ Error: "Missing required fields" });
+    }
+
+    // Check if the username already exists
+    const usernameExists = await new Promise((resolve, reject) => {
+      const checkQuery = 'SELECT COUNT(*) as count FROM register WHERE username = ?';
+      conn.query(checkQuery, [username], (err, result) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(result && result[0] && result[0].count > 0);
+        }
+      });
+    }).catch(error => {
+      console.error('Promise rejected:', error);
+      throw error;
+    });
+
+    if (usernameExists) {
+      return res.status(400).json({ Error: "Username already exists" });
+    }
+
+    // Hash the password
+    const hashedPassword = await bcrypt.hash(password, salt);
+
+    const query = "UPDATE register SET name = ?, username = ?, password = ?, gender = ?  WHERE id = ?";
+    const values = [
+      name,
+      username,
+      hashedPassword,
+      gender,
+      id
+    ];
+
+    conn.query(query, values, (err, result) => {
+      if (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Internal server error' });
       } else {
         console.log(result);
-        res.json({ message: "Customer updated successfully" });
+        res.json({ message: "Admin updated successfully" });
       }
     });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Internal server error' });
   } finally {
+    // Close the database connection here, after the query is executed
     conn.end();
   }
 });
@@ -108,7 +152,7 @@ router.delete('/delete/:id', async (req, res) => {
   const conn = db.connection;
 
   const { id } = req.params;
-  const query = "DELETE FROM customer_entry WHERE id = ?";
+  const query = "DELETE FROM register WHERE id = ?";
 
   try {
     await conn.connect();
@@ -131,7 +175,7 @@ router.get("/search/:name", async (req, res) => {
   const { name } = req.params;
   const db = new Database();
   const conn = db.connection;
-  const query = "SELECT * FROM customer_entry WHERE Name LIKE ?";
+  const query = "SELECT * FROM register WHERE Name LIKE ?";
 
   try {
     await conn.connect();

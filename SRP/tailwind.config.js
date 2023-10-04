@@ -18,6 +18,14 @@ module.exports = {
                 darkGrayishBlue: 'hsl(227, 12%, 61%)',
                 veryDarkBlue: 'hsl(233, 12%, 13%)',
             },
+            height: {
+                100: '100px',
+                200: '200px',
+            },
+            width: {
+                100: '100px',
+                200: '200px'
+            },
         },
     },
     plugins: [],
