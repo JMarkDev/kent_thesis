@@ -57,34 +57,6 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-router.post('/add', async (req, res) => {
-  const { Name } = req.body;
-
-  if (!Name) {
-    return res.status(400).json({ message: 'Name cannot be null' });
-  }
-
-  const db = new Database();
-  const conn = db.connection;
-  const query = "INSERT INTO customer_entry (Name) VALUES (?)";
-  const values = [Name];
-
-  try {
-    await conn.connect();
-
-    conn.query(query, values, (error, result) => {
-      if (error) throw error;
-      res.json({ success: true, message: "Successfully added" });
-    });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Internal server error' });
-  } finally {
-    conn.end();
-  }
-});
-
-
 router.put('/update/:id', async (req, res) => {
   const db = new Database();
   const conn = db.connection;
@@ -191,5 +163,35 @@ router.get("/search/:name", async (req, res) => {
     conn.end();
   }
 });
+
+// Update Recommended Route
+router.put('/update-recommended/:id', async (req, res) => {
+  const db = new Database();
+  const conn = db.connection;
+
+  const { id } = req.params;
+  const { recommended } = req.body;
+
+  try {
+    const updateQuery = 'UPDATE register SET recommended = ? WHERE id = ?';
+    const values = [recommended, id];
+
+    conn.query(updateQuery, values, (err, result) => {
+      if (err) {
+        console.error('Error updating recommended:', err);
+        res.status(500).json({ message: 'Internal server error' });
+      } else {
+        console.log('Update result:', result); // Log the result of the update operation
+        console.log('Recommended updated successfully');
+        console.log(values)
+        res.json({ message: 'Recommended updated successfully' });
+      }
+    });
+  } catch (error) {
+    console.error('Update error:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
 
 module.exports = router;
