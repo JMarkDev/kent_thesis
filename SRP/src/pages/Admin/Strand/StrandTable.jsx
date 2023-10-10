@@ -7,14 +7,14 @@ import { Dialog, Transition } from "@headlessui/react";
 // import { GrView } from 'react-icons/gr';
 import { Fragment } from "react";
 
-function CourseTable({ courses }) {
-  const [courseList, setCourseList] = useState(courses);
+function StrandTable({ strand }) {
+  const [strandList, setStrandList] = useState(strand);
   const [deleteUserId, setDeleteUserId] = useState(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
   useEffect(() => {
-    setCourseList(courses);
-  }, [courses]);
+    setStrandList(strand);
+  }, [strand]);
 
   const openDeleteDialog = (id) => {
     setDeleteUserId(id);
@@ -33,13 +33,13 @@ function CourseTable({ courses }) {
     return text;
   };
 
-  const handleDeleteCourse = async (id) => {
+  const handleDeleteStrand = async (id) => {
     try {
-      const response = await axios.delete(`http://localhost:3001/course/delete/${id}`);
+      const response = await axios.delete(`http://localhost:3001/strand/delete/${id}`);
       console.log(response);
       // Update the course list without the deleted course
-      const newCourseList = courseList.filter((course) => course.id !== id);
-      setCourseList(newCourseList);
+      const newStrandList = strandList.filter((strand) => strand.id !== id);
+      setStrandList(newStrandList);
     } catch (error) {
       console.log(error);
     }
@@ -58,7 +58,7 @@ function CourseTable({ courses }) {
       >
         Id
       </th>
-          <th
+      <th
             className="px-6 py-3 bg-gray-50 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider"
             style={{ backgroundColor: '#ADD8E6' }}
           >
@@ -80,44 +80,36 @@ function CourseTable({ courses }) {
             className="px-6 py-3 bg-gray-50 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider"
             style={{ backgroundColor: '#ADD8E6' }}
           >
-            Strand
-          </th>
-          <th
-            className="px-6 py-3 bg-gray-50 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider"
-            style={{ backgroundColor: '#ADD8E6' }}
-          >
             Action
           </th>
         </tr>
       </thead>
       <tbody className="bg-white divide-y divide-gray-200">
         {
-          courseList.map((course) => (
-                   <tr key={course.id}>
-                   <td className="px-6 py-4 whitespace-no-wrap">{course.id}</td>
-                       <td className="px-6 py-4 whitespace-no-wrap">
-                            <div className="relative group">
-                                <img
-                                src={`http://localhost:3001/${course.image}`}
-                                    alt=""
-                                    className="h-100 w-100 rounded-lg transition-transform transform scale-100 group-hover:scale-150"
-                                />
-                            </div>
+          strandList.map((strand) => (
+                   <tr key={strand.id}>
+                        <td className="px-6 py-4 whitespace-no-wrap">{strand.id}</td>
+                        <td className="px-6 py-4 whitespace-no-wrap">
+                        <div className="relative group">
+                            <img
+                            src={`http://localhost:3001/${strand.image}`}
+                                alt=""
+                                className="h-100 w-100 rounded-lg transition-transform transform scale-100 group-hover:scale-150"
+                            />
+                        </div>
                         </td>
-                
-                        <td className="px-6 py-4 whitespace-no-wrap">{course.title}</td>
-                        <td className="px-6 py-4 w-300 whitespace-no-wrap">
-                        {truncateText(course.description, 100)} {/* Adjust the max length */}
+                        <td className="px-6 py-4 whitespace-no-wrap">{strand.name}</td>
+                        <td className="px-6 py-4 whitespace-no-wrap w-500">
+                        {truncateText(strand.description, 250)} {/* Adjust the max length */}
                         </td>
-                        <td className="px-6 py-4 whitespace-no-wrap">{course.strand}</td>
                         <td className="px-6 py-4 whitespace-no-wrap">
                             <button className="text-red-600 hover:text-red-800"
-                                onClick={() => openDeleteDialog(course.id)}
+                                onClick={() => openDeleteDialog(strand.id)}
                             >
                                 <MdDelete className="h-6 w-6" />
                             </button>
                             <button className="ml-5 text-red-600 hover:text-red-800">
-                                <Link to={`/course/edit/${course.id}`} className="text-decoration-none">
+                                <Link to={`/strand/edit/${strand.id}`} className="text-decoration-none">
                                     <LiaEdit className="h-6 w-6" />
                                 </Link>
                             </button>
@@ -171,7 +163,7 @@ function CourseTable({ courses }) {
             <button
             type="button"
             className="inline-flex justify-center px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md hover:bg-red-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-red-500"
-            onClick={() => handleDeleteCourse(deleteUserId)} // Pass deleteUserId here
+            onClick={() => handleDeleteStrand(deleteUserId)} // Pass deleteUserId here
           >
             Delete
           </button>
@@ -194,4 +186,4 @@ function CourseTable({ courses }) {
   );
 }
 
-export default CourseTable;
+export default StrandTable;

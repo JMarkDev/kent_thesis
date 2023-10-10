@@ -1,28 +1,29 @@
-import React, {useState} from 'react'
-import { Link, useNavigate } from 'react-router-dom'
-import axios from 'axios'
+import React, { useEffect, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 function Login() {
   const [values, setValues] = useState({
     username: '',
     password: '',
-    role: '', // Set a default role
+    role: '', 
   });
-  const navigate = useNavigate(); // Hook for navigation
+  const navigate = useNavigate(); 
 
-  const handleLogin = (event) => {
+  const handleLogin = async (event) => {
     event.preventDefault();
-    axios
+    await axios
       .post('http://localhost:3001/login', values, { withCredentials: true })
       .then((res) => {
         if (res.data.Status === 'Login Successful') {
-          localStorage.setItem('token', res.data.token); // Store the token in local storage
+          localStorage.setItem('token', res.data.token); 
           localStorage.setItem('role', res.data.role);
-          // Determine the redirect URL based on the user's role
+          localStorage.setItem('userId', res.data.userId);
+
           const userRole = localStorage.getItem('role');
           const dashboardURL = userRole === 'admin' ? '/dashboard' : '/Home';
           navigate(dashboardURL);
-          alert('Login successfully.'); // Display the alert message
+          alert('Login successfully.'); 
         } else {
           alert(res.data.Error);
         }
@@ -32,6 +33,7 @@ function Login() {
         alert('An error occurred during login.');
       });
   };
+  
   return (
     <>
     <div className="flex  bg-gray-300 h-[750px] flex-1 flex-col justify-center  px-6 py-12 lg:px-8">
@@ -70,9 +72,9 @@ function Login() {
                   Password
                 </label>
                 <div className="text-sm">
-                  <a href="#" className="font-semibold text-indigo-600 hover:text-indigo-500">
+                  <Link to="#" className="font-semibold text-indigo-600 hover:text-indigo-500">
                     Forgot password?
-                  </a>
+                  </Link>
                 </div>
               </div>
               <div className="mt-2">

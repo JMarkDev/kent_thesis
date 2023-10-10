@@ -162,7 +162,7 @@
             </thead>
             <tbody>
               {suggestions.length === 0
-                ? userData.map(({ id, name, username, gender,role }) => (
+                ? userData.map(({ id, name, username, gender,role, recommended }) => (
                     <tr key={id}>
                       <td className="p-4 md:table-cell">
                         <Typography
@@ -212,6 +212,13 @@
                       {/* Add more columns for other user properties */}
                       <td className="p-4 md:table-cell">
                         {/* Add recommended data here */}
+                        <Typography
+                          variant="small"
+                          color="blue-gray"
+                          className="font-normal"
+                        >
+                          {recommended}
+                        </Typography>
                       </td>
                       <td className="p-4 md:table-cell">
                         {/* Add delete action with trashcan icon */}

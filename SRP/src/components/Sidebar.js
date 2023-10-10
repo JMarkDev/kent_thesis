@@ -8,6 +8,7 @@ import { FaUserShield } from 'react-icons/fa';
 import { IoMdArrowDropright } from 'react-icons/io'; // Import the greater-than icon
 import Logo from '../assets/images/logo.svg';
 import HamburgerButton from './HamburgerMenuButton/HamburgerButton';
+import { BsFillJournalBookmarkFill } from 'react-icons/bs';
 
 const Sidebar = () => {
   const [open, setOpen] = useState(true);
@@ -17,16 +18,17 @@ const Sidebar = () => {
 
   const Menus = [
     { title: 'Dashboard', path: '/dashboard', src: <AiFillPieChart /> },
+    { title: 'Strand', path: '/strand', src: <BsFillJournalBookmarkFill/> },
     {
       title: 'Courses',
       path: '/courses',
-      src: <SiFuturelearn />,
-      dropdown: [
-        { title: 'STEM', path: '/course-stem' },
-        { title: 'HUMSS', path: '/course-humss' },
-        { title: 'ABM', path: '/course-abm' },
-        { title: 'SMAW', path: '/course-smaw' },
-      ],
+      src: <SiFuturelearn />
+      // dropdown: [
+      //   { title: 'STEM', path: '/course-stem' },
+      //   { title: 'HUMSS', path: '/course-humss' },
+      //   { title: 'ABM', path: '/course-abm' },
+      //   { title: 'SMAW', path: '/course-smaw' },
+      // ],
     },
     { title: 'Users', path: '/users', src: <CgProfile /> },
     { title: 'Admin', path: '/admin', src: <FaUserShield /> },

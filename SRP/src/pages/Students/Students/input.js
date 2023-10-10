@@ -1,7 +1,14 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 const Input = () => {
+  const [courseOption, setCourseOption] = useState([]);
+  const [selectedCourseTitle, setSelectedCourseTitle] = useState('');
+  const [recommendedStrand, setRecommendedStrand] = useState(''); 
+  const [recommendedCourse, setRecommendedCourse] = useState('');
+  const navigate = useNavigate();
+  const [hasInteracted, setHasInteracted] = useState(true);
   const [grades, setGrades] = useState({
     math: '',
     science: '',
@@ -14,71 +21,17 @@ const Input = () => {
     esp: '',
   });
 
-  const [selectedJob, setSelectedJob] = useState('');
-  const [recommendedStrand, setRecommendedStrand] = useState(''); // Initialize recommendedStrand in state
-  const navigate = useNavigate();
-  const [hasInteracted, setHasInteracted] = useState(true);
-
-  const calculateRecommendedStrand = (grades, selectedJob) => {
-    let recommendedStrand = '';
+  const totalGrade =
+  (parseFloat(grades.math) +
+    parseFloat(grades.science) +
+    parseFloat(grades.english) +
+    parseFloat(grades.arpan) +
+    parseFloat(grades.mapeh) +
+    parseFloat(grades.tle) +
+    parseFloat(grades.filipino) +
+    parseFloat(grades.ict) +
+    parseFloat(grades.esp)) / 9;
   
-    // Calculate the total grade average
-    const totalGrade =
-      (parseFloat(grades.math) + parseFloat(grades.science) + parseFloat(grades.english)+ parseFloat(grades.arpan)+ parseFloat(grades.mapeh)+ parseFloat(grades.tle)+ parseFloat(grades.filipino)+ parseFloat(grades.ict)+ parseFloat(grades.esp)) / 9;
-  
-      if (grades.math >= 85 && grades.science >= 85 && totalGrade >= 85) {
-        recommendedStrand = 'STEM';
-      } else if (totalGrade <= 79) {
-        recommendedStrand = 'SMAW';
-      } else {
-      switch (selectedJob) {
-        case 'Software Developer/Engineer':
-        case 'Biomedical Engineer':
-        case 'Data Scientist/Analyst':
-        case 'Civil Engineer':
-        case 'Mechanical Engineer':
-        case 'Electrical Engineer':
-        case 'Pharmacist':
-        case 'Medical Doctor':
-        case 'Computer Systems Analyst':
-        case 'Statistician':
-          recommendedStrand = 'STEM';
-          break;
-        case 'Psychologist':
-        case 'Social Worker':
-        case 'Lawyer':
-        case 'Teacher/Educator':
-        case 'Public Relations Specialist':
-        case 'Writer/Content Creator':
-        case 'Historian':
-        case 'Human Resources Manager':
-        case 'Market Research Analyst':
-        case 'Event Planner':
-          recommendedStrand = 'HUMSS';
-          break;
-        case 'Accountant':
-        case 'Financial Analyst':
-        case 'Marketing Manager':
-        case 'Business Development Manager':
-        case 'Entrepreneur':
-        case 'Investment Banker':
-        case 'Management Consultant':
-        case 'Sales Manager':
-        case 'Financial Manager':
-          recommendedStrand = 'ABM';
-          break;
-        default:
-          recommendedStrand = 'SMAW';
-      }
-    }
-
-  // Save the recommendedStrand value to localStorage
-  localStorage.setItem('recommendedStrand', recommendedStrand);
-
-  console.log(recommendedStrand);
-
-  return recommendedStrand; // Add this line to return the value
-};
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -88,74 +41,71 @@ const Input = () => {
     });
   };
 
-  const handleJobChange = (e) => {
-    setSelectedJob(e.target.value);
-  };
-  const handleSubmit = (e) => {
-    e.preventDefault();
+  const handleSubmit = async (e) => {
+  e.preventDefault();
+
+  const studentId = localStorage.getItem('userId')
+
+  try {
+    const response = await fetch(`http://localhost:3001/students/update-recommended/${studentId}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ recommended: recommendedCourse }),
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to update recommended course');
+    }
+
+    // Assuming the backend returns the updated student data, you can parse it as JSON
+    const updatedStudentData = await response.json();
+    console.log(updatedStudentData);
+    console.log(recommendedCourse)
+
+    // Now, you can navigate to the recommendation page or update your UI with the updated data
+    navigate('/recommendation');
+  } catch (error) {
+    console.error('Error updating recommended course:', error);
+    // Handle the error, display a message, or perform other actions as needed
+  }
+};
+
     
-    // Calculate recommended strand here
-    const calculatedStrand = calculateRecommendedStrand(grades, selectedJob);
-  
-    // Generate a unique key based on the current timestamp
-    const uniqueKey = `recommendedStrand_${Date.now()}`;
-  
-    // Save the recommendedStrand value to localStorage with the unique key
-    localStorage.setItem(uniqueKey, calculatedStrand);
-  
-    // Set the recommendedStrand in state
-    setRecommendedStrand(calculatedStrand);
-    navigate('/recommendation')
-  };
-  
+    const handleCourseSelectChange = (event) => {
+      const selectedTitle = event.target.value;
+      setSelectedCourseTitle(selectedTitle);
+        
+      const selectedCourse = courseOption.find((course) => course.title === selectedTitle);
+      const selectedStrand = selectedCourse.strand;
+      console.log(selectedStrand)
 
-  const jobOptions = [
-    //STEM//
-    'Software Developer/Engineer',
-    'Biomedical Engineer',
-    'Data Scientist/Analyst',
-    'Civil Engineer',
-    'Mechanical Engineer',
-    'Electrical Engineer',
-    'Pharmacist',
-    'Medical Doctor',
-    'Computer Systems Analyst',
-    'Statistician',
-    //HUMSS//
-    'Psychologist',
-    'Social Worker',
-    'Lawyer',
-    'Teacher/Educator',
-    'Public Relations Specialist',
-    'Writer/Content Creator',
-    'Historian',
-    'Human Resources Manager',
-    'Market Research Analyst',
-    'Event Planner',
-    //ABM//
-    'Accountant',
-    'Financial Analyst',
-    'Marketing Manager',
-    'Business Development Manager',
-    'Entrepreneur',
-    'Investment Banker',
-    'Management Consultant',
-    'Sales Manager',
-    'Bank Manager',
-    'Financial Manager',
-    //SMAW//
-    'Welder',
-    'Welding Inspector',
-    'Welding Supervisor',
-    'Pipefitter',
-    'Boilermaker',
-    'Fabricator',
-    'Metalworker',
-    'Structural Steel Worker',
-    'Welding Engineer',
-    'Maintenance Technician',
+      if (grades.math >= 86 && grades.science >= 86 && totalGrade >= 86 && selectedStrand === 'STEM') {
+        setRecommendedCourse('STEM'); 
+      } else if (grades.math >= 86 && grades.tle >= 86 && totalGrade >= 86 && selectedStrand === 'ABM') {
+        setRecommendedCourse('ABM'); 
+      } else if (grades.science >= 86 && grades.arpan >= 86 && totalGrade >= 86 && selectedStrand === 'HUMSS') {
+        setRecommendedCourse('HUMSS'); 
+      } else if (totalGrade <= 85 && selectedStrand === 'SMAW') {
+        setRecommendedCourse('SMAW'); 
+      } else if (selectedStrand === 'STEM' || selectedStrand === 'ABM' || selectedStrand === 'HUMSS' || selectedStrand === 'SMAW') {
+        setRecommendedCourse('SMAW');
+      } else {
+        setRecommendedCourse(selectedStrand);
+      }
 
-  ];
+    };
+    
+    useEffect(() => {
+      axios.get('http://localhost:3001/course/fetch')
+      .then((res) => {
+         setCourseOption(res.data)
+      })
+      .catch((err) => {
+         console.log(err)
+      })
+   }, [])
 
   const isSubmitDisabled =
     !grades.math ||
@@ -167,7 +117,8 @@ const Input = () => {
     !grades.filipino ||
     !grades.ict ||
     !grades.esp ||
-    !selectedJob;
+    !selectedCourseTitle ;
+
 
   return (
     <div className="flex flex-col justify-center bg-[#99f6e4] dark:bg-[#14b8a6] items-center h-full">
@@ -429,26 +380,19 @@ const Input = () => {
         
           
           <div className="col-span-3 text-center">
-            <label className="block text-gray-700 text-sm  font-mono mb-2 text-center" htmlFor="ambition">
-              Ambition:
-            </label>
-            <select
-              id="ambition"
-              name="ambition"
-              value={selectedJob}
-              onChange={handleJobChange}
-              className="border rounded-lg py-2 px-3 w-auto text-center appearance-none bg-white dark:bg-black text-black dark:text-white font-thin mx-20"
-              required
-            >
-              <option value="" disabled>
-                Choose Your Ambition
-              </option>
-              {jobOptions.map((job, index) => (
-                <option key={index} value={job}>
-                  {job}
-                </option>
-              ))}
-            </select>
+          <label className="block text-gray-700 text-sm font-mono mb-2 text-center" htmlFor="ambition">
+          Course Option:
+        </label>
+        <select value={selectedCourseTitle} onChange={handleCourseSelectChange}>
+          <option value="" disabled>
+            Choose Your Course
+          </option>
+          {courseOption.map((course) => (
+            <option key={course.id} value={course.title}>
+              {course.title}
+            </option>
+          ))}
+        </select>        
           </div>
           <div className="mt-4 text-center">
           <button

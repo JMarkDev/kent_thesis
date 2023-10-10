@@ -1,10 +1,10 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { FaRegCalendarMinus, FaEllipsisV, FaUser } from "react-icons/fa"
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell, Sector } from 'recharts';
 import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, } from 'recharts';
 import PieComponent from './PieComponent';
 // import { Progress } from 'antd';
-
+import axios from 'axios';
 
 
 const datas = [
@@ -78,7 +78,19 @@ const datas = [
 
 
 const Dashboard = () => {
-
+    const COLORS = ['#e88245', '#8daa3b', '#1f82c1', '#9333ea'];
+    const [strand, setStrand] = useState([]);
+    const handleData = async () => {
+        try{
+            const response = await axios.get('http://localhost:3001/strand/fetch');
+            setStrand(response.data);
+        } catch(err) {
+            console.log(err);
+        }
+    }
+    useEffect(() => {
+        handleData();
+    }, [])
 
 
     return (
@@ -89,13 +101,38 @@ const Dashboard = () => {
                 <div className=' dark:bg-[#fdba74] border-2 h-[150px]  rounded-[20px] bg-white border-l-[6px] border-[#fdba74] flex items-center px-[30px] cursor-pointer hover:shadow-lg transform hover:scale-[103%] transition duration-300 ease-out'>
                 <div className="rounded-full h-12 w-12 flex items-center justify-center bg-emerald-200">
                     <FaUser fontSize={28} color="" />
+             
+                {/*    <div>
+                    <h2 className='text-[#030712] text-[11px] leading-[17px] px-[10px] font-bold'>Total</h2>
+                    <h1 className='text-[20px] leading-[24px] font-bold text-[#5a5c69] mt-[5px] px-[10px] dark:text-white'>100</h1>
+                </div>
+               
+                {
+                    strand.map((strand) => (
+                        <div key={strand.id}>
 
+                            <div className='dark:bg-[#9333ea] border-2 h-[150px] rounded-[20px] bg-white border-l-[6px] border-[#9333ea] flex items-center px-[30px] cursor-pointer hover:shadow-lg transform hover:scale-[103%] transition duration-300 ease-out'>
+                            <div className="rounded-full h-12 w-12 flex items-center justify-center bg-emerald-200">
+                                <FaUser fontSize={28} color="" />
+            
+                            </div>
+                                <div>
+                                    <h2 className='text-[#030712] text-[11px] leading-[17px] px-[10px] font-bold'>{strand.name}</h2>
+                                    <h1 className='text-[20px] leading-[24px] font-bold text-[#5a5c69] px-[10px] mt-[5px] dark:text-white'>{strand.value}</h1>
+                                </div>
+                            </div>
+                            
+                        </div>
+
+                        
+                    ))
+                }
+            */}
 				</div>
                     <div>
                         <h2 className='text-[#030712] text-[11px] leading-[17px] px-[10px] font-bold'>ABM</h2>
                         <h1 className='text-[20px] leading-[24px] font-bold text-[#5a5c69] mt-[5px] px-[10px] dark:text-white'>100</h1>
                     </div>
-
                 </div>
                 <div className='dark:bg-[#bef264] border-2 h-[150px]  rounded-[20px] bg-white border-l-[6px] border-[#bef264] flex items-center px-[30px] cursor-pointer hover:shadow-lg transform hover:scale-[103%] transition duration-300 ease-out'>
                 <div className="rounded-full h-12 w-12 flex items-center justify-center bg-emerald-200">

@@ -28,6 +28,11 @@ import STEM from './pages/Admin/Courses/STEM';
 import HUMSS from './pages/Admin/Courses/HUMSS';
 import ABM from './pages/Admin/Courses/ABM';
 import SMAW from './pages/Admin/Courses/SMAW';
+import AddCourse from './pages/Admin/Courses/AddCourse';
+import EditCourse from './pages/Admin/Courses/EditCourse';
+import Strand from './pages/Admin/Strand';
+import AddStrand from './pages/Admin/Strand/AddStrand';
+import EditStrand from './pages/Admin/Strand/EditStrand';
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -68,6 +73,51 @@ function App() {
             />
           }
         />
+        <Route
+          path="/strand"
+          element={
+            <ProtectedRoute
+              element={
+                <Layout>
+                  <Strand />
+                </Layout>
+              }
+              allowedRoles={['admin']}
+              isLoggedIn={isLoggedIn}
+              userRole={userRole}
+            />
+          }
+        />
+        <Route
+        path="/strand/add"
+        element={
+          <ProtectedRoute
+            element={
+              <Layout>
+                <AddStrand />
+              </Layout>
+            }
+            allowedRoles={['admin']}
+            isLoggedIn={isLoggedIn}
+            userRole={userRole}
+          />
+        }
+      />
+      <Route
+      path="/strand/edit/:id"
+      element={
+        <ProtectedRoute
+          element={
+            <Layout>
+              <EditStrand />
+            </Layout>
+          }
+          allowedRoles={['admin']}
+          isLoggedIn={isLoggedIn}
+          userRole={userRole}
+        />
+      }
+    />
         <Route
         path="/courses"
         element={
@@ -143,6 +193,39 @@ function App() {
       />
     }
   />
+
+    <Route
+    path="/courses/add"
+    element={
+      <ProtectedRoute
+        element={
+          <Layout>
+            <AddCourse />
+          </Layout>
+        }
+        allowedRoles={['admin']}
+        isLoggedIn={isLoggedIn}
+        userRole={userRole}
+      />
+    }
+  />
+  
+  <Route
+  path="/course/edit/:id"
+  element={
+    <ProtectedRoute
+      element={
+        <Layout>
+          <EditCourse />
+        </Layout>
+      }
+      allowedRoles={['admin']}
+      isLoggedIn={isLoggedIn}
+      userRole={userRole}
+    />
+  }
+/>
+
         <Route
           path="/users"
           element={

@@ -20,6 +20,10 @@ const [open, setOpen] = useState(false);
     '/course-abm': 'ABM',
     '/course-humss': 'HUMSS',
     '/course-smaw': 'SMAW',
+    '/courses/add': 'Add Course',
+    '/courses': 'Courses',
+    [`/course/edit/${id}`]: 'Edit Course',
+    '/strand': 'Strand'
   }
 
   const pageTitle = pageTitles[location.pathname];

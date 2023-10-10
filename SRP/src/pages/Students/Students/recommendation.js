@@ -1,29 +1,32 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import axios from 'axios';
 
 const Recommendation = () => {
-  // Retrieve the recommendedStrand from localStorage
-  const recommendedStrand = localStorage.getItem('recommendedStrand');
+  const [strand, setStrand] = useState('');
+  const [userId, setUserId] = useState('');
+
+  useEffect(() => {
+    const storedUserId = localStorage.getItem('userId');
+    if (storedUserId) {
+      setUserId(storedUserId);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (userId) { // Check if userId is truthy (not null or undefined)
+      axios.get(`http://localhost:3001/students/${userId}`)
+        .then((res) => {
+          const recommendedStrand = res.data[0].recommended;
+          setStrand(recommendedStrand);
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+    }
+  }, [userId]); // Add userId as a dependency
+
   const [isWhyModalOpen, setIsWhyModalOpen] = useState(false);
-
-  let congratulationsMessage = '';
-
-  switch (recommendedStrand) {
-    case 'STEM':
-      congratulationsMessage ='"Congratulations! Based on your inputs, your recommended strand is STEM."';
-      break;
-    case 'SMAW':
-      congratulationsMessage = 'Congratulations! Based on your inputs, your recommended strand is SMAW.';
-      break;
-    case 'HUMSS':
-      congratulationsMessage = 'Congratulations! Based on your inputs, your recommended strand is HUMSS.';
-      break;
-    case 'ABM':
-      congratulationsMessage = 'Congratulations! Based on your inputs, your recommended strand is ABM.';
-      break;
-    default:
-      congratulationsMessage = `Congratulations! Based on your inputs, your recommended strand is ${recommendedStrand}`;
-  }
 
   const openWhyModal = () => {
     setIsWhyModalOpen(true);
@@ -42,17 +45,20 @@ const Recommendation = () => {
     >
       <div className="flex flex-col justify-center items-center w-full h-full bg-black bg-opacity-40">
         <section className="bg-gray-300 dark:bg-gray-500 p-10 ml-10 mr-10 rounded-lg shadow-md flex flex-col items-center">
-          <p className=" text-xl  text-center font-bold">{congratulationsMessage}</p>
+          <p className=" text-xl  text-center font-bold">Congratulations! Based on your inputs, your recommended strand {strand}</p>
 
           <p className="mb-5 text-center underline cursor-pointer ">
             <span onClick={openWhyModal}>Why?</span>
           </p>
 
-          <Link to={`/${recommendedStrand}/`}>
+        {/*
+      
+     <Link to={`/${recommendedStrand}/`}>
             <button className="bg-blue-400 text-white py-2 px-4 rounded-full hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-400">
               About Strand
             </button>
           </Link>
+          */} 
         </section>
       </div>
 
