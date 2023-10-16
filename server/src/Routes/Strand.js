@@ -16,24 +16,6 @@ router.get("/fetch", async (req, res) => {
     })
 });
 
-// router.post("/add", async (req, res) => {
-//     const db = new Database();
-//     const conn = db.connection;
-//     const { name, description } = req.body; // Remove 'value' from here
-  
-//     const query = "INSERT INTO strand (name, description) VALUES (?, ?)"; // Remove 'value' from the query
-//     const values = [name, description];
-    
-//     await conn.connect((err) => {
-//       if (err) throw err;
-//       conn.query(query, values, (err, result) => {
-//         if (err) throw err;
-//         res.json({ data: "Strand added successfully" });
-//       });
-//     });
-//   });
-  
-
 router.get("/fetch/:id", async (req, res) => {
     const db = new Database();
     const conn = db.connection;

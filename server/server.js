@@ -11,6 +11,7 @@ const studentsRoute = require("./src/Routes/Students.js")
 const courseRoute = require("./src/Routes/Course.js")
 const strandRoute = require("./src/Routes/Strand.js")
 const recommendedRoute = require("./src/Routes/Recommended.js")
+const rankingRoute = require("./src/Routes/Ranking.js")
 
 app.use(cors({
   origin: "http://localhost:3000",
@@ -23,6 +24,7 @@ app.use('/students', studentsRoute);
 app.use('/course', courseRoute);
 app.use('/strand', strandRoute);
 app.use('/recommended', recommendedRoute);
+app.use('/rank', rankingRoute);
 
 app.use(cookieParser());
 
