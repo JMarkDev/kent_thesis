@@ -5,6 +5,9 @@ import axios from 'axios';
 const Recommendation = () => {
   const [strand, setStrand] = useState('');
   const [userId, setUserId] = useState('');
+  const [isWhyModalOpen, setIsWhyModalOpen] = useState(false);
+  const [strandId, setStrandId] = useState('');
+  const [strandName, setStrandName] = useState([]);
 
   useEffect(() => {
     const storedUserId = localStorage.getItem('userId');
@@ -12,21 +15,48 @@ const Recommendation = () => {
       setUserId(storedUserId);
     }
   }, []);
-
+  
   useEffect(() => {
-    if (userId) { // Check if userId is truthy (not null or undefined)
+    if (userId) {
       axios.get(`http://localhost:3001/students/${userId}`)
         .then((res) => {
           const recommendedStrand = res.data[0].recommended;
           setStrand(recommendedStrand);
+  
+          // Fetch strands after setting the strand state
+          axios.get('http://localhost:3001/strand/fetch')
+            .then((res) => {
+              const matchStrand = res.data.find((strandItem) => strandItem.name === recommendedStrand);
+              if (matchStrand) {
+                setStrandId(matchStrand.id);
+              }
+            })
+            .catch((err) => {
+              console.log(err);
+            });
         })
         .catch((err) => {
           console.log(err);
         });
     }
-  }, [userId]); // Add userId as a dependency
+  }, [userId]);
 
-  const [isWhyModalOpen, setIsWhyModalOpen] = useState(false);
+  useEffect(() => {
+    const userId = localStorage.getItem('userId');
+
+    axios.get(`http://localhost:3001/rank/${userId}`)
+    .then((res) => {
+      const ranking = res.data[0].strandRanking;
+      const strandNames = ranking.split(', ')
+      setStrandName(strandNames)
+    })
+    .catch((err) => {
+      console.log(err);
+    })
+  }, [])
+  
+
+
 
   const openWhyModal = () => {
     setIsWhyModalOpen(true);
@@ -37,6 +67,7 @@ const Recommendation = () => {
   };
 
   return (
+    
     <div
       className="flex h-screen bg-no-repeat bg-cover bg-center text-black dark:text-white"
       style={{
@@ -50,15 +81,12 @@ const Recommendation = () => {
           <p className="mb-5 text-center underline cursor-pointer ">
             <span onClick={openWhyModal}>Why?</span>
           </p>
-
-        {/*
       
-     <Link to={`/${recommendedStrand}/`}>
-            <button className="bg-blue-400 text-white py-2 px-4 rounded-full hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-400">
-              About Strand
-            </button>
-          </Link>
-          */} 
+          <Link to={`/strand/${strandId}`} className="bg-blue-400 text-white py-2 px-4 rounded-full hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-400">
+          About Strand
+        </Link>
+        
+          
         </section>
       </div>
 
@@ -68,14 +96,19 @@ const Recommendation = () => {
         }`}
       >
         <div className="bg-gray-800 bg-opacity-70 absolute inset-0"></div>
-        <div className="bg-blue-300 dark:bg-blue-300 p-4  md:p-10 lg:p-20 rounded-lg shadow-md w-full max-w-2xl mt-10  relative">
-          <h2 className="text-2xl font-semibold mb-4 text-center">Reasons:</h2>
-          <ul className="list-disc list-inside text-lg mb-4 text-justify font-mono">
-  <li>Lorem ipsum dolor sit amet consectetur adipisicing elit. Nemo expedita voluptas culpa sapiente alias molestiae. Numquam corrupti in laborum sed rerum et corporis.</li>
-  <li>Lorem ipsum dolor sit amet consectetur adipisicing elit. Nemo expedita voluptas culpa sapiente alias molestiae. Numquam corrupti in laborum sed rerum et corporis.</li>
-  <li>Lorem ipsum dolor sit amet consectetur adipisicing elit. Nemo expedita voluptas culpa sapiente alias molestiae. Numquam corrupti in laborum sed rerum et corporis.</li>
-</ul>
-           
+        <div className="bg-blue-300 dark:bg-blue-400 p-4 md:p-10 lg:p-20 rounded-lg shadow-md w-full max-w-2xl mt-10 relative">
+        <h2 className="text-3xl font-extrabold text-center text-blue-800 dark:text-blue-200 mb-6">Strand Ranking Based on Your Input Grades:</h2>
+        <ul className="list-none text-xl mb-4 text-gray-700 dark:text-gray-300">
+          {
+            strandName.map((strand, index) => (
+              <li key={index} className="mb-4 flex items-center">
+                <span className="text-2xl text-blue-600 dark:text-blue-300 mr-2">{index + 1}.</span>
+                <span className="text-xl">{strand}</span>
+              </li>
+            ))
+          }
+        </ul>
+                  
           <button
             onClick={closeWhyModal} // Close the modal
             className="absolute top-2 right-2 text-gray-600 hover:text-gray-900"

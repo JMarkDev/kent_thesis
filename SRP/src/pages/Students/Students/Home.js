@@ -1,8 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link} from 'react-router-dom';
+import axios from 'axios';
 
 const Home = () => {
+  const [strand, setStrand] = useState('');
+  const [userId, setUserId] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
+
   const [textColor, setTextColor] = useState('text-green-500');
+
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -12,6 +18,28 @@ const Home = () => {
     return () => clearInterval(interval);
   }, []);
 
+  useEffect(() => {
+    const storedUserId = localStorage.getItem('userId');
+    if (storedUserId) {
+      setUserId(storedUserId);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (userId) {
+      axios.get(`http://localhost:3001/students/${userId}`)
+        .then((res) => {
+          const recommendedStrand = res.data[0].recommended;
+          setStrand(recommendedStrand);
+        })
+        .catch((err) => {
+          console.log(err);
+        })
+        .finally(() => {
+          setIsLoading(false);
+        });
+    }
+  }, [userId]);
   return (
     <div className="bg-gray-100 h-screen flex flex-col ">
      
@@ -37,11 +65,11 @@ const Home = () => {
             Discover Your Path Now!
           </p>
           <Link
-            to="/input" // Replace with the actual link to the strands page
-            className="mt-6 mb-20 px-8 py-3 bg-blue-300   text-black hover:text-black rounded-full inline-block hover:bg-yellow-300 focus:outline-none focus:ring-2 focus:ring-blue-400"
-          >
-            Let's See
-          </Link>
+          to={isLoading ? '/loading' : strand ? '/recommendation' : '/input'}
+          className="mt-6 mb-20 px-8 py-3 bg-blue-300 text-black hover:text-black rounded-full inline-block hover:bg-yellow-300 focus:outline-none focus:ring-2 focus:ring-blue-400"
+        >
+          Let's See
+        </Link>
         </section>
       </main>
 

@@ -1,11 +1,12 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Toggle from './ThemeToggle'
 import { Link, useNavigate, useLocation } from "react-router-dom";
-
+import axios from "axios";
 const Navbar = () => {
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+  const [name, setName] = useState('')
 
   const showProfile = () => {
     setOpen(!open);
@@ -16,6 +17,22 @@ const Navbar = () => {
     localStorage.removeItem("token");
     navigate("/");
   };
+
+  const getName = async () => {
+    const name = localStorage.getItem('userId')
+    await axios.get(`http://localhost:3001/students/${name}`)
+    .then((res) => {
+      const name = res.data[0].name
+      setName(name)
+    })
+    .catch((err) => {
+      console.log(err)
+    })
+  }
+
+  useEffect(() => {
+    getName()
+  }, [])
 
   return (
     <header className="w-full h-auto sm:h-20 bg-[#38bdf8] dark:bg-[#075985]">
@@ -56,7 +73,7 @@ const Navbar = () => {
             className="flex items-center gap-[15px] relative"
             onClick={showProfile}
           >
-            <p className="dark:text-white text-black font-medium">Kentoy</p>
+            <p className="dark:text-white text-black font-medium">{name}</p>
             <div className="gap-10 h-[10px] w-[50px] rounded-full cursor-pointer flex items-center justify-center relative z-40 hover:opacity-50 mr-5">
               <img
                 className="w-7 h-7 rounded-full object-cover"

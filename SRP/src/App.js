@@ -15,24 +15,17 @@ import ProtectedRoute from './pages/ProtectedRoute';
 import Admin from './pages/Admin/admin';
 import AboutUs from './pages/Students/Students/AboutUs';
 import Strands from './pages/Students/Students/Strands';
-import Stem from './pages/Students/Students/stem';
-import Abm from './pages/Students/Students/abm';
-import Humss from './pages/Students/Students/humss';
-import Smaw from './pages/Students/Students/smaw';
 import Input from './pages/Students/Students/input';
 import Recommendation from './pages/Students/Students/recommendation';
 import Add_admin from './pages/Admin/Add_admin';
 import Edit_admin from './pages/Admin/Edit_admin';
 import Course from './pages/Admin/Course';
-import STEM from './pages/Admin/Courses/STEM';
-import HUMSS from './pages/Admin/Courses/HUMSS';
-import ABM from './pages/Admin/Courses/ABM';
-import SMAW from './pages/Admin/Courses/SMAW';
 import AddCourse from './pages/Admin/Courses/AddCourse';
 import EditCourse from './pages/Admin/Courses/EditCourse';
 import Strand from './pages/Admin/Strand';
 import AddStrand from './pages/Admin/Strand/AddStrand';
 import EditStrand from './pages/Admin/Strand/EditStrand';
+import SingleStrand from './pages/Students/Students/SingleStrand';
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -133,67 +126,6 @@ function App() {
           />
         }
       />
-    <Route
-    path="/course-stem"
-    element={
-      <ProtectedRoute
-        element={
-          <Layout>
-            <STEM />
-          </Layout>
-        }
-        allowedRoles={['admin']}
-        isLoggedIn={isLoggedIn}
-        userRole={userRole}
-      />
-    }
-  />
-    <Route
-    path="/course-humss"
-    element={
-      <ProtectedRoute
-        element={
-          <Layout>
-            <HUMSS />
-          </Layout>
-        }
-        allowedRoles={['admin']}
-        isLoggedIn={isLoggedIn}
-        userRole={userRole}
-      />
-    }
-  />
-  <Route
-    path="/course-abm"
-    element={
-      <ProtectedRoute
-        element={
-          <Layout>
-            <ABM />
-          </Layout>
-        }
-        allowedRoles={['admin']}
-        isLoggedIn={isLoggedIn}
-        userRole={userRole}
-      />
-    }
-  />
-  <Route
-    path="/course-smaw"
-    element={
-      <ProtectedRoute
-        element={
-          <Layout>
-            <SMAW />
-          </Layout>
-        }
-        allowedRoles={['admin']}
-        isLoggedIn={isLoggedIn}
-        userRole={userRole}
-      />
-    }
-  />
-
     <Route
     path="/courses/add"
     element={
@@ -320,6 +252,21 @@ function App() {
           }
         />
         <Route
+        path="/strand/:id"
+        element={
+          <ProtectedRoute
+            element={
+              <LayoutStudent>
+                <SingleStrand />
+              </LayoutStudent>
+            }
+            allowedRoles={['student']}
+            isLoggedIn={isLoggedIn}
+            userRole={userRole}
+          />
+        }
+      />
+        <Route
           path="/input"
           element={
             <ProtectedRoute
@@ -380,66 +327,8 @@ function App() {
             />
           }
         />
-        <Route
-          path="/stem"
-          element={
-            <ProtectedRoute
-              element={
-                <LayoutStudent>
-                  <Stem />
-                </LayoutStudent>
-              }
-              allowedRoles={['student']}
-              isLoggedIn={isLoggedIn}
-              userRole={userRole}
-            />
-          }
-        />
-        <Route
-          path="/abm"
-          element={
-            <ProtectedRoute
-              element={
-                <LayoutStudent>
-                  <Abm />
-                </LayoutStudent>
-              }
-              allowedRoles={['student']}
-              isLoggedIn={isLoggedIn}
-              userRole={userRole}
-            />
-          }
-        />
-        <Route
-          path="/humss"
-          element={
-            <ProtectedRoute
-              element={
-                <LayoutStudent>
-                  <Humss />
-                </LayoutStudent>
-              }
-              allowedRoles={['student']}
-              isLoggedIn={isLoggedIn}
-              userRole={userRole}
-            />
-          }
-        />
-        <Route
-          path="/smaw"
-          element={
-            <ProtectedRoute
-              element={
-                <LayoutStudent>
-                  <Smaw />
-                </LayoutStudent>
-              }
-              allowedRoles={['student']}
-              isLoggedIn={isLoggedIn}
-              userRole={userRole}
-            />
-          }
-        />
+        
+       
         <Route path="/" element={<LandingPage />} />
       </Routes>
     </Router>

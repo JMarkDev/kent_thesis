@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
 const Input = () => {
+  const [strandRank, setStrandRank] = useState([]);
   const [courseOption, setCourseOption] = useState([]);
   const [selectedCourseTitle, setSelectedCourseTitle] = useState('');
-  const [recommendedStrand, setRecommendedStrand] = useState(''); 
   const [recommendedCourse, setRecommendedCourse] = useState('');
   const navigate = useNavigate();
   const [hasInteracted, setHasInteracted] = useState(true);
@@ -20,6 +20,37 @@ const Input = () => {
     ict: '',
     esp: '',
   });
+
+  useEffect(() => {
+    const strands = [
+      { name: 'STEM', grade: (parseFloat(grades.math) + parseFloat(grades.science)) / 2 },
+      { name: 'ABM', grade: (parseFloat(grades.math) + parseFloat(grades.tle)) / 2 },
+      { name: 'HUMSS', grade: (parseFloat(grades.science) + parseFloat(grades.arpan)) / 2 },
+      { name: 'SMAW', grade: (parseFloat(grades.math) + parseFloat(grades.science) + parseFloat(grades.english) + parseFloat(grades.mapeh) + parseFloat(grades.tle) + parseFloat(grades.arpan) + parseFloat(grades.filipino) + parseFloat(grades.ict) + parseFloat(grades.esp)) / 9 }
+    ];
+
+    const sortedStrands = strands.sort((a, b) => b.grade - a.grade);
+    setStrandRank(sortedStrands);
+    
+  }, [grades])
+
+  const strandRanking = async () => {
+    const strandNames = strandRank.map((strand) => strand.name)
+    const strandRankingString = strandNames.join(', ');
+    const studentId = localStorage.getItem('userId')
+
+    await axios.post('http://localhost:3001/rank/add', {
+      studentId: studentId, 
+      strandRanking: strandRankingString  
+    })
+
+    .then((res) => {
+      console.log(res)
+    })
+    .catch((err) => {
+      console.log(err)
+    })
+  }
 
   const totalGrade =
   (parseFloat(grades.math) +
@@ -59,17 +90,15 @@ const Input = () => {
       throw new Error('Failed to update recommended course');
     }
 
-    // Assuming the backend returns the updated student data, you can parse it as JSON
     const updatedStudentData = await response.json();
     console.log(updatedStudentData);
-    console.log(recommendedCourse)
 
-    // Now, you can navigate to the recommendation page or update your UI with the updated data
     navigate('/recommendation');
   } catch (error) {
     console.error('Error updating recommended course:', error);
-    // Handle the error, display a message, or perform other actions as needed
   }
+
+  strandRanking()
 };
 
     
@@ -118,7 +147,6 @@ const Input = () => {
     !grades.ict ||
     !grades.esp ||
     !selectedCourseTitle ;
-
 
   return (
     <div className="flex flex-col justify-center bg-[#99f6e4] dark:bg-[#14b8a6] items-center h-full">
@@ -379,11 +407,15 @@ const Input = () => {
         </div>
         
           
-          <div className="col-span-3 text-center">
-          <label className="block text-gray-700 text-sm font-mono mb-2 text-center" htmlFor="ambition">
+        <div className="col-span-3 text-center">
+        <label className="block text-gray-700 text-sm font-mono mb-2 text-center" htmlFor="ambition">
           Course Option:
         </label>
-        <select value={selectedCourseTitle} onChange={handleCourseSelectChange}>
+        <select
+          value={selectedCourseTitle}
+          onChange={handleCourseSelectChange}
+          className="w-full px-4 py-2 bg-white border border-gray-300 rounded-md focus:outline-none focus:border-blue-500 text-sm text-gray-700"
+        >
           <option value="" disabled>
             Choose Your Course
           </option>
@@ -392,7 +424,7 @@ const Input = () => {
               {course.title}
             </option>
           ))}
-        </select>        
+        </select>       
           </div>
           <div className="mt-4 text-center">
           <button

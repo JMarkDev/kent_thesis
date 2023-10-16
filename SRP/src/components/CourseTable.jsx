@@ -110,7 +110,7 @@ function CourseTable({ courses }) {
                         {truncateText(course.description, 100)} {/* Adjust the max length */}
                         </td>
                         <td className="px-6 py-4 whitespace-no-wrap">{course.strand}</td>
-                        <td className="px-6 py-4 whitespace-no-wrap">
+                        <td className="px-3 py-4">
                             <button className="text-red-600 hover:text-red-800"
                                 onClick={() => openDeleteDialog(course.id)}
                             >
