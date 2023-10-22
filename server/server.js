@@ -12,6 +12,7 @@ const courseRoute = require("./src/Routes/Course.js")
 const strandRoute = require("./src/Routes/Strand.js")
 const recommendedRoute = require("./src/Routes/Recommended.js")
 const rankingRoute = require("./src/Routes/Ranking.js")
+const gradesRoute = require("./src/Routes/Grades.js")
 
 app.use(cors({
   origin: "http://localhost:3000",
@@ -25,6 +26,7 @@ app.use('/course', courseRoute);
 app.use('/strand', strandRoute);
 app.use('/recommended', recommendedRoute);
 app.use('/rank', rankingRoute);
+app.use('/grade', gradesRoute);
 
 app.use(cookieParser());
 
@@ -41,33 +43,142 @@ app.get('/uploads/:filename', (req, res) => {
   res.sendFile(`${__dirname}/uploads/${filename}`);
 });
 
-app.post("/strand/add", upload.single('image'), async (req, res) => {
-  let fileType = req.file.mimetype.split('/')[1];
-  let newFileName = req.file.filename + '.' + fileType;
-  fs.rename(`./uploads/${req.file.filename}`, `./uploads/${newFileName}`, function (err) {
-    if (err) throw err;
-    console.log('Uploaded Success');
-  });
+app.post("/strand/add", upload.array('image', 5), async (req, res) => {
+  const imageFileNames = [];
+
+  for (const file of req.files) {
+    let fileType = file.mimetype.split('/')[1];
+    let newFileName = file.filename + '.' + fileType;
+
+    fs.rename(`./uploads/${file.filename}`, `./uploads/${newFileName}`, function (err) {
+      if (err) {
+        // Handle the error appropriately
+        console.error('Error renaming file:', err);
+        res.status(500).json({ Error: 'File upload error' });
+        return;
+      }
+      console.log('Uploaded Success');
+    });
+
+    imageFileNames.push(newFileName);
+  }
 
   const db = new Database();
   const conn = db.connection;
-  const { image, name, description } = req.body; // Remove 'value' from here
+  const { name, description, recommendationConditions } = req.body;
 
-  const query = "INSERT INTO strand (image, name, description) VALUES (?, ?, ?)"; // Remove 'value' from the query
-  const values = [
-    `uploads/${newFileName}`,
-    name, 
-    description
-  ];
-  
-  await conn.connect((err) => {
-    if (err) throw err;
-    conn.query(query, values, (err, result) => {
-      if (err) throw err;
-      res.json({ data: "Strand added successfully" });
-    });
+  // Check if the name already exists in the database
+  const checkNameExist = "SELECT COUNT(*) AS count FROM strand WHERE name = ?";
+  const checkNameValues = [name];
+
+  conn.query(checkNameExist, checkNameValues, (err, result) => {
+    if (err) {
+      // Handle the error appropriately
+      console.error('Error checking name existence:', err);
+      res.status(500).json({ Error: 'Database error' });
+      return;
+    }
+
+    if (result[0].count > 0) {
+      // Name already exists, respond with an error
+      res.status(400).json({ Error: 'Strand name already exists' });
+    } else {
+      // Name does not exist, proceed with insertion
+      const query = "INSERT INTO strand (image, name, description, recommendationConditions) VALUES (?, ?, ?, ?)";
+      const values = [
+        imageFileNames.join(','),
+        name,
+        description,
+        recommendationConditions
+      ];
+
+      conn.query(query, values, (err, result) => {
+        if (err) {
+          // Handle the error appropriately
+          console.error('Error inserting data:', err);
+          res.status(500).json({ Error: 'Database error' });
+          return;
+        }
+        res.json({ data: "Strand added successfully" });
+      });
+    }
   });
 });
+
+app.put("/strand/edit/:id", upload.array('image', 5), async (req, res) => {
+  const db = new Database();
+  const conn = db.connection;
+
+  const imageFileNames = [];
+
+  // Move file renaming into a function to avoid duplication
+  async function renameFile(file) {
+    return new Promise((resolve, reject) => {
+      const fileType = file.mimetype.split('/')[1];
+      const newFileName = file.filename + '.' + fileType;
+
+      fs.rename(`./uploads/${file.filename}`, `./uploads/${newFileName}`, (err) => {
+        if (err) {
+          console.error('Error renaming file:', err);
+          reject(err);
+        } else {
+          console.log('Uploaded Success');
+          resolve(newFileName);
+        }
+      });
+    });
+  }
+
+  try {
+    // Rename files asynchronously and collect their names
+    for (const file of req.files) {
+      const newFileName = await renameFile(file);
+      imageFileNames.push(newFileName);
+    }
+
+    const { id } = req.params; // Extract ID from the request parameters
+    const { name, description, recommendationConditions } = req.body;
+
+    const checkNameExist = "SELECT COUNT(*) AS count FROM strand WHERE name = ?";
+    const checkNameValues = [name];
+
+    conn.query(checkNameExist, checkNameValues, (err, results) => {
+      if (err) {
+        console.error('Error checking name existence:', err);
+        res.status(500).json({ Error: 'Database error' });
+        return;
+      }
+
+      if (results[0].count > 0) {
+        // Name already exists, respond with an error
+        res.status(400).json({ Error: 'Strand name already exists' });
+      } else {
+        // Name does not exist, proceed with insertion
+        const query = "UPDATE strand SET name = ?, description = ?, image = ?, recommendationConditions = ? WHERE id = ?";
+        const values = [
+          name,
+          description,
+          imageFileNames.join(','),
+          recommendationConditions,
+          id
+        ];
+
+        conn.query(query, values, (err, result) => {
+          if (err) {
+            console.error('Error inserting data:', err);
+            res.status(500).json({ Error: 'Database error' });
+            return;
+          }
+          res.json({ data: "Strand updated successfully" });
+        });
+      }
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ Error: 'Internal Server Error' });
+  }
+});
+
 
 app.post('/course/upload', upload.single('image'), async (req, res) => {
   let fileType = req.file.mimetype.split('/')[1];

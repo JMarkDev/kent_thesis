@@ -20,7 +20,8 @@ router.post('/add', async (req, res) => {
     const db = new Database();
     const conn = db.connection;
 
-    const {   
+    const {
+        studentsName,   
         math,
         science,
         english,
@@ -30,8 +31,9 @@ router.post('/add', async (req, res) => {
         filipino,
         ict,
         esp } = req.body;
-    const query = "INSERT INTO grades (math, science, english, mapeh, tle, arpan, filipino, ict, esp) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    const query = "INSERT INTO grades (studentsName, math, science, english, mapeh, tle, arpan, filipino, ict, esp) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
     const values = [
+        studentsName,
         math,
         science,
         english,
