@@ -15,21 +15,21 @@ export default function Dropdown(props) {
     props.handleFilter(filter); // Call the parent component's filter function
   };
 
-  const handleFilter = async () => {
-    await axios.get('http://localhost:3001/strand/fetch', {
-      params: {
-        filter: selectedFilter
-      }
-    }).then((response) => {
-      const name = response.data.map((strand) => strand.name);
-  
-      setStrands(name);
-    })
-  }
-  
   useEffect(() => {
+    const handleFilter = async () => {
+      await axios.get('http://localhost:3001/strand/fetch', {
+        params: {
+          filter: selectedFilter
+        }
+      }).then((response) => {
+        const name = response.data.map((strand) => strand.name);
+    
+        setStrands(name);
+      })
+    }
+    
     handleFilter();
-  }, [])
+  }, [selectedFilter])
   
 
 

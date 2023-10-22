@@ -26,6 +26,7 @@ import Strand from './pages/Admin/Strand';
 import AddStrand from './pages/Admin/Strand/AddStrand';
 import EditStrand from './pages/Admin/Strand/EditStrand';
 import SingleStrand from './pages/Students/Students/SingleStrand';
+import CarouselComponent from './pages/Students/Students/stem';
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -319,6 +320,21 @@ function App() {
               element={
                 <LayoutStudent>
                   <Strands />
+                </LayoutStudent>
+              }
+              allowedRoles={['student']}
+              isLoggedIn={isLoggedIn}
+              userRole={userRole}
+            />
+          }
+        />
+        <Route
+          path="/stem"
+          element={
+            <ProtectedRoute
+              element={
+                <LayoutStudent>
+                  <CarouselComponent />
                 </LayoutStudent>
               }
               allowedRoles={['student']}

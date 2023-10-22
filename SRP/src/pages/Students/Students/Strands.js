@@ -9,6 +9,7 @@ export default function Strands() {
     axios.get('http://localhost:3001/strand/fetch')
     .then((res) => {
       setStrand(res.data)
+      console.log(res.data[0].image)
     })
     .catch((err) => {
       console.log(err)
@@ -45,7 +46,7 @@ export default function Strands() {
               strand.map((strand) => (
                 <div key={strand.id} className=''>
                 <div className='m-5 lg:flex bg-white justify-center items-center rounded lg:p-10 p-5'>
-                  <img className='lg:w-[50%] lg:h-[350px] rounded-lg' src={`http://localhost:3001/${strand.image}`} alt='strand img' />  
+                  <img className='lg:w-[50%] lg:h-[350px] rounded-lg' src={`http://localhost:3001/uploads/${strand.image.split(',')[0]}`} alt='strand img' />  
                   <div className='lg:w-[50%]'>
                     <h1 className='text-2xl lg:ml-5 leading-normal'>{strand.name}</h1>
                     <p className='lg:ml-5 leading-normal pb-10'>{truncateText(strand.description, 350)}</p>

@@ -1,8 +1,16 @@
-import React, { useEffect, useState } from 'react';
+import React, { Fragment, useEffect, useState } from 'react';
+import { Listbox, Transition } from '@headlessui/react';
+import { CheckIcon, ChevronUpDownIcon } from '@heroicons/react/20/solid';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import '../../../index.css';
+function classNames(...classes) {
+  return classes.filter(Boolean).join(' ');
+}
 
 const Input = () => {
+  // const [conditionStrandName, setConditionStrandName] = useState([])
+  const [conditionData, setConditionsData] = useState({})
   const [strandRank, setStrandRank] = useState([]);
   const [courseOption, setCourseOption] = useState([]);
   const [selectedCourseTitle, setSelectedCourseTitle] = useState('');
@@ -26,7 +34,6 @@ const Input = () => {
       { name: 'STEM', grade: (parseFloat(grades.math) + parseFloat(grades.science)) / 2 },
       { name: 'ABM', grade: (parseFloat(grades.math) + parseFloat(grades.tle)) / 2 },
       { name: 'HUMSS', grade: (parseFloat(grades.science) + parseFloat(grades.arpan)) / 2 },
-      { name: 'SMAW', grade: (parseFloat(grades.math) + parseFloat(grades.science) + parseFloat(grades.english) + parseFloat(grades.mapeh) + parseFloat(grades.tle) + parseFloat(grades.arpan) + parseFloat(grades.filipino) + parseFloat(grades.ict) + parseFloat(grades.esp)) / 9 }
     ];
 
     const sortedStrands = strands.sort((a, b) => b.grade - a.grade);
@@ -51,17 +58,6 @@ const Input = () => {
       console.log(err)
     })
   }
-
-  const totalGrade =
-  (parseFloat(grades.math) +
-    parseFloat(grades.science) +
-    parseFloat(grades.english) +
-    parseFloat(grades.arpan) +
-    parseFloat(grades.mapeh) +
-    parseFloat(grades.tle) +
-    parseFloat(grades.filipino) +
-    parseFloat(grades.ict) +
-    parseFloat(grades.esp)) / 9;
   
 
   const handleChange = (e) => {
@@ -71,6 +67,21 @@ const Input = () => {
       [name]: value,
     });
   };
+
+  const recommendationConditions = async () => {
+  try {
+    const response = await axios.get('http://localhost:3001/strand/recommendation-conditions/all');
+    const data = response.data;
+
+    setConditionsData(data);
+  } catch (err) {
+    console.log(err);
+  }
+};
+
+useEffect(() => {
+  recommendationConditions()
+}, [])
 
   const handleSubmit = async (e) => {
   e.preventDefault();
@@ -90,9 +101,6 @@ const Input = () => {
       throw new Error('Failed to update recommended course');
     }
 
-    const updatedStudentData = await response.json();
-    console.log(updatedStudentData);
-
     navigate('/recommendation');
   } catch (error) {
     console.error('Error updating recommended course:', error);
@@ -101,30 +109,48 @@ const Input = () => {
   strandRanking()
 };
 
-    
-    const handleCourseSelectChange = (event) => {
-      const selectedTitle = event.target.value;
-      setSelectedCourseTitle(selectedTitle);
-        
-      const selectedCourse = courseOption.find((course) => course.title === selectedTitle);
-      const selectedStrand = selectedCourse.strand;
-      console.log(selectedStrand)
+const getConditionsForStrand = (strandName) => {
+  const conditionsData = conditionData;
 
-      if (grades.math >= 86 && grades.science >= 86 && totalGrade >= 86 && selectedStrand === 'STEM') {
-        setRecommendedCourse('STEM'); 
-      } else if (grades.math >= 86 && grades.tle >= 86 && totalGrade >= 86 && selectedStrand === 'ABM') {
-        setRecommendedCourse('ABM'); 
-      } else if (grades.science >= 86 && grades.arpan >= 86 && totalGrade >= 86 && selectedStrand === 'HUMSS') {
-        setRecommendedCourse('HUMSS'); 
-      } else if (totalGrade <= 85 && selectedStrand === 'SMAW') {
-        setRecommendedCourse('SMAW'); 
-      } else if (selectedStrand === 'STEM' || selectedStrand === 'ABM' || selectedStrand === 'HUMSS' || selectedStrand === 'SMAW') {
-        setRecommendedCourse('SMAW');
-      } else {
-        setRecommendedCourse(selectedStrand);
+  if (conditionsData && conditionsData[strandName]) {
+    return conditionsData[strandName];
+  } else {
+    return null;
+  }
+};
+
+
+const handleCourseSelectChange = (selectedTitle) => {
+  setSelectedCourseTitle(selectedTitle);
+
+  const selectedCourse = courseOption.find((course) => course.title === selectedTitle);
+  const selectedStrand = selectedCourse.strand;
+  console.log(selectedStrand);
+
+  const conditionsData = getConditionsForStrand(selectedStrand);
+
+  if (conditionsData) {
+    const checkCondition = (subject, requiredGrade) => {
+      if (grades[subject] >= requiredGrade) {
+        return true;
       }
-
+      return false;
     };
+
+    const meetsConditions = Object.entries(conditionsData).every(([subject, requiredGrade]) => {
+      return checkCondition(subject, parseInt(requiredGrade));
+    });
+
+    if (meetsConditions) {
+      setRecommendedCourse(selectedStrand);
+    } else {
+      setRecommendedCourse('DefaultRecommendation');
+    }
+  } else {
+    setRecommendedCourse(selectedStrand);
+  }
+};
+
     
     useEffect(() => {
       axios.get('http://localhost:3001/course/fetch')
@@ -147,6 +173,25 @@ const Input = () => {
     !grades.ict ||
     !grades.esp ||
     !selectedCourseTitle ;
+
+    const canSelectCourse = (strandName) => {
+      const conditionsData = getConditionsForStrand(strandName);
+    
+      if (!conditionsData) {
+        // If conditions for the strand are not found, disable the option
+        return false;
+      }
+    
+      // Define a function to check conditions for a given subject and grade
+      const checkCondition = (subject, requiredGrade) => {
+        return grades[subject] >= requiredGrade;
+      };
+    
+      // Check the conditions for each subject in the conditions data
+      return Object.entries(conditionsData).every(([subject, requiredGrade]) => {
+        return checkCondition(subject, parseInt(requiredGrade));
+      });
+    };
 
   return (
     <div className="flex flex-col justify-center bg-[#99f6e4] dark:bg-[#14b8a6] items-center h-full">
@@ -411,21 +456,82 @@ const Input = () => {
         <label className="block text-gray-700 text-sm font-mono mb-2 text-center" htmlFor="ambition">
           Course Option:
         </label>
-        <select
-          value={selectedCourseTitle}
-          onChange={handleCourseSelectChange}
-          className="w-full px-4 py-2 bg-white border border-gray-300 rounded-md focus:outline-none focus:border-blue-500 text-sm text-gray-700"
-        >
-          <option value="" disabled>
-            Choose Your Course
-          </option>
-          {courseOption.map((course) => (
-            <option key={course.id} value={course.title}>
-              {course.title}
-            </option>
-          ))}
-        </select>       
-          </div>
+ 
+      </div>
+
+      <Listbox value={selectedCourseTitle} onChange={handleCourseSelectChange}>
+      {({ open }) => (
+        <div className="relative mt-2">
+          <Listbox.Button className="relative w-full cursor-default rounded-md bg-white py-1.5 pl-3 pr-10 text-left text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 sm:text-sm sm:leading-6">
+            <span className="block truncate">{selectedCourseTitle ? selectedCourseTitle : 'Choose Course'}</span>
+            <span className="pointer-events-none absolute inset-y-0 right-0 ml-3 flex items-center pr-2">
+              <ChevronUpDownIcon className="h-5 w-5 text-gray-400" aria-hidden="true" />
+            </span>
+          </Listbox.Button>
+    
+          <Transition
+            show={open}
+            as={Fragment}
+            leave="transition ease-in duration-100"
+            leaveFrom="opacity-100"
+            leaveTo="opacity-0"
+          >
+            <div className="absolute z-10 mt-1 w-full -top-48">
+              <Listbox.Options className="max-h-56 overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm">
+                {courseOption.map((course) => (
+                  <Listbox.Option
+                    key={course.id}
+                    title={!canSelectCourse(course.strand) ? "This course doesn't meet the requirements" : null}
+                    className={({ active }) =>
+                      classNames(
+                        active ? 'bg-indigo-600 text-white' : 'text-gray-900',
+                        'relative cursor-default select-none py-2 pl-3 pr-9',
+                        {
+                          'pointer-events-none': !canSelectCourse(course.strand),
+                          'opacity-50': !canSelectCourse(course.strand),
+                        }
+                      )
+                    }
+                    value={course.title}
+                    onClick={() => {
+                      // Call the parent's handleCourseSelectChange function
+                      handleCourseSelectChange(course.title);
+                    }}
+                    disabled={!canSelectCourse(course.strand)}
+                  >
+                    {({ selected, active }) => (
+                      <>
+                        <div className="flex items-center">
+                          <span
+                            className={classNames(selected ? 'font-semibold' : 'font-normal', 'ml-3 block truncate')}
+                          >
+                            {course.title}
+                          </span>
+                        </div>
+    
+                        {selected ? (
+                          <span
+                            className={classNames(
+                              active ? 'text-white' : 'text-indigo-600',
+                              'absolute inset-y-0 right-0 flex items-center pr-4'
+                            )}
+                          >
+                            <CheckIcon className="h-5 w-5" aria-hidden="true" />
+                          </span>
+                        ) : null}
+                      </>
+                    )}
+                  </Listbox.Option>
+                ))}
+              </Listbox.Options>
+            </div>
+          </Transition>
+        </div>
+      )}
+    </Listbox>
+    
+
+
           <div className="mt-4 text-center">
           <button
           type="submit"

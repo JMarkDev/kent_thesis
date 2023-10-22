@@ -5,40 +5,102 @@ import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
 function EditStrand() {
-  const [name, setName] = useState('');
-  const [description, setDescription] = useState('');
+  const [formData, setFormData] = useState({
+    name: '',
+    description: '',
+    image: null,
+    selectedSubjects: [],
+    recommendationConditions: {}
+  });
+  
   const navigate = useNavigate();
+  const { id } = useParams();
+  
 
-  let { id } = useParams();
+  const subjects = [
+    'math',
+    'science',
+    'english',
+    'mapeh',
+    'tle',
+    'arpan',
+    'filipino',
+    'ict',
+    'esp',
+  ];
 
   useEffect(() => {
-    axios
-      .get(`http://localhost:3001/strand/fetch/${id}`)
+    axios.get(`http://localhost:3001/strand/fetch/${id}`)
       .then((response) => {
         const data = response.data;
-        setName(data.name);
-        setDescription(data.description);
+        setFormData((prevFormData) => ({
+          ...prevFormData,
+          name: data.name,
+          description: data.description,
+        }));
       })
       .catch((error) => {
         console.error('Error fetching data', error);
       });
-  }, [id]);
+  }, [id, setFormData]);
+  
 
-  const handleUpdate = async function (e) {
+  const handleInputChange = (e) => {
+    const { name, files } = e.target;
+    if (name === 'image') {
+      setFormData({
+        ...formData,
+        [name]: files, 
+      });
+    } else {
+      setFormData({
+        ...formData,
+        [name]: e.target.value,
+      });
+    }
+  };  
+
+  const handleUpdate = async (e) => {
     e.preventDefault();
 
-    const updateDetais = {
-      name: name,
-      description: description,
-    };
+    const updatedFormData = new FormData();
+
+    updatedFormData.append('name', formData.name);
+    updatedFormData.append('description', formData.description);
+    updatedFormData.append('recommendationConditions', JSON.stringify(formData.recommendationConditions));
+
+    if (formData.image) {
+      for (let i = 0; i < formData.image.length; i++) {
+        updatedFormData.append('image', formData.image[i]);
+      }
+    }
 
     try {
-      const response = await axios.put(`http://localhost:3001/strand/edit/${id}`, updateDetais);
-      alert(response.data.data); // Log the success response data
+      const response = await axios.put(`http://localhost:3001/strand/edit/${id}`, updatedFormData);
+      alert(response.data.data); 
       navigate('/strand');
     } catch (error) {
-      alert(error.response.data.data); // Log the error response data
+      alert(error.response.data.data); 
     }
+  }
+
+  const handleSubjectChange = (selectedSubjects) => {
+    // When subjects are selected, update the state
+    const updatedFormData = { ...formData };
+    updatedFormData.selectedSubjects = selectedSubjects;
+    setFormData(updatedFormData);
+  };
+  
+    const handleRecommendationChange = (subject, value) => {
+    if (!/^(100|[1-9][0-9]?)$/.test(value)) {
+      value = value.slice(0, 2);
+    } else if (value === "1000") {
+      value = "100";
+    }
+  
+    const updatedFormData = { ...formData };
+    updatedFormData.recommendationConditions[subject] = value;
+    setFormData(updatedFormData);
   };
 
   return (
@@ -61,10 +123,24 @@ function EditStrand() {
               type="text"
               id="name"
               name="name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
+              value={formData.name}
+              onChange={(e) => setFormData({...formData, name: e.target.value })}
               className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring focus:ring-indigo-200"
               required
+            />
+          </div>
+          <div className="mb-4">
+            <label htmlFor="image" className="block text-gray-700 font-bold">
+              Image:
+            </label>
+            <input
+              type="file"
+              id="image"
+              name="image"
+              onChange={handleInputChange}
+              className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring focus:ring-indigo-200"
+              required
+              multiple
             />
           </div>
           <div className="mb-4">
@@ -74,13 +150,58 @@ function EditStrand() {
             <textarea
               id="description"
               name="description"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
+              value={formData.description}
+              onChange={(e) => setFormData({ ...formData, description: e.target.value})}
               rows="6"
               className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring focus:ring-indigo-200"
               required
             ></textarea>
           </div>
+
+          <label className="block text-gray-700 font-bold">Select Subjects:</label>
+          {
+            subjects?.map((subject, index) => (
+              <div key={index}>
+                <label>
+                <input
+                type="checkbox"
+                value={subject}
+                checked={(formData.selectedSubjects || []).includes(subject)}
+                onChange={(e) => {
+                  const selectedSubjects = [...formData.selectedSubjects];
+                  if (e.target.checked) {
+                    selectedSubjects.push(e.target.value);
+                  } else {
+                    const index = selectedSubjects.indexOf(e.target.value);
+                    if (index !== -1) {
+                      selectedSubjects.splice(index, 1);
+                    }
+                  }
+                  handleSubjectChange(selectedSubjects);
+                }}
+              />{' '}
+                {subject.charAt(0).toUpperCase() + subject.slice(1)}
+              </label>
+              </div>
+            
+            ))
+          }
+             {formData.selectedSubjects.map((subject) => (
+              <div key={subject} className="mb-4">
+                <label htmlFor={subject} className="block text-gray-700 font-bold">
+                  {subject.charAt(0).toUpperCase() + subject.slice(1)} Grade:
+                </label>
+                <input
+                  type="number"
+                  id={subject}
+                  name={subject}
+                  value={formData.recommendationConditions[subject] || ''}
+                  onChange={(e) => handleRecommendationChange(subject, e.target.value)}
+                  className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring focus:ring-indigo-200"
+                />
+              </div>
+            ))}
+      
           <button
             type="submit"
             className="bg-indigo-600 w-full text-white py-2 px-4 rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring focus:ring-indigo-200"

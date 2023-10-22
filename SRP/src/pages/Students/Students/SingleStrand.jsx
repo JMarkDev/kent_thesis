@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { useParams } from 'react-router-dom';
-
+import { useParams, Link } from 'react-router-dom';
+import CarouselComponent from '../Students/stem'
+import { TbArrowBackUp } from 'react-icons/tb';
 function SingleStrand() {
   const [courses, setCourses] = useState([]);
   const [strand, setStrand] = useState({});
+  const [strandImages, setStrandImages] = useState([]); // Store the image file
   const { id } = useParams();
 
   useEffect(() => {
@@ -23,11 +25,25 @@ function SingleStrand() {
       .then((res) => {
         res.data.description = res.data.description.replace(/\n/g, '<br>');
         setStrand(res.data);
+  
+        // Check if res.data.image is an array, and if not, convert it to an array
+        const imagesArray = Array.isArray(res.data.image) ?
+          res.data.image.map(image => image.trim()) :
+          res.data.image.split(',').map(image => image.trim());
+        setStrandImages(imagesArray);
       })
       .catch((err) => {
         console.log(err);
       });
-  }, []);
+  }, [id]);
+  
+  useEffect(() => {
+    // Log strandImages when it gets updated
+    console.log(strandImages);
+  }, [strandImages]);
+  
+  
+  
 
   function filterCoursesByStrand(courses, strandName) {
     return courses.filter((course) => course.strand === strandName);
@@ -38,12 +54,15 @@ function SingleStrand() {
   return (
     <div className="p-5 lg:p-10 xl:p-20 bg-gray-100">
       <div className="max-w-screen-xl mx-auto">
-        <div className="bg-white p-5 lg:p-10 rounded-lg shadow-md">
-          <img
-            src={`http://localhost:3001/${strand.image}`}
-            alt="Strand Img"
-            className="mx-auto mb-8 lg:w-[50%] lg:h-[350px] rounded-lg"
-          />
+     
+        <div>
+        
+        
+  
+          <Link to='/Strands' className="flex justify-center items-center bg-gray-500 hover:bg-gray-700 text-white px-6 py-2 rounded-md absolute top-20 mt-8">
+            <TbArrowBackUp className='mr-2'/>Back
+          </Link>
+          <CarouselComponent images={strandImages}/>
           <div
             className="text-2xl font-semi text-left"
             dangerouslySetInnerHTML={{ __html: strand.description }}

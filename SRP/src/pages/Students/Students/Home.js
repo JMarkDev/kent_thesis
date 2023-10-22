@@ -6,7 +6,6 @@ const Home = () => {
   const [strand, setStrand] = useState('');
   const [userId, setUserId] = useState('');
   const [isLoading, setIsLoading] = useState(true);
-
   const [textColor, setTextColor] = useState('text-green-500');
 
 
@@ -68,7 +67,7 @@ const Home = () => {
           to={isLoading ? '/loading' : strand ? '/recommendation' : '/input'}
           className="mt-6 mb-20 px-8 py-3 bg-blue-300 text-black hover:text-black rounded-full inline-block hover:bg-yellow-300 focus:outline-none focus:ring-2 focus:ring-blue-400"
         >
-          Let's See
+          {!strand ? <span>Let's See</span> : <span>View Result</span>}
         </Link>
         </section>
       </main>

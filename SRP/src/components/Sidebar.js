@@ -19,17 +19,7 @@ const Sidebar = () => {
   const Menus = [
     { title: 'Dashboard', path: '/dashboard', src: <AiFillPieChart /> },
     { title: 'Strand', path: '/strand', src: <BsFillJournalBookmarkFill/> },
-    {
-      title: 'Courses',
-      path: '/courses',
-      src: <SiFuturelearn />
-      // dropdown: [
-      //   { title: 'STEM', path: '/course-stem' },
-      //   { title: 'HUMSS', path: '/course-humss' },
-      //   { title: 'ABM', path: '/course-abm' },
-      //   { title: 'SMAW', path: '/course-smaw' },
-      // ],
-    },
+    { title: 'Courses', path: '/courses', src: <SiFuturelearn />},
     { title: 'Users', path: '/users', src: <CgProfile /> },
     { title: 'Admin', path: '/admin', src: <FaUserShield /> },
   ];

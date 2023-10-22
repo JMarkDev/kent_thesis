@@ -6,6 +6,8 @@ import axios from 'axios';
 import { Dialog, Transition } from "@headlessui/react";
 // import { GrView } from 'react-icons/gr';
 import { Fragment } from "react";
+import '../../../index.css'
+
 
 function StrandTable({ strand }) {
   const [strandList, setStrandList] = useState(strand);
@@ -91,18 +93,30 @@ function StrandTable({ strand }) {
                         <td className="px-6 py-4 whitespace-no-wrap">{strand.id}</td>
                         <td className="px-6 py-4 whitespace-no-wrap">
                         <div className="relative group">
-                            <img
-                            src={`http://localhost:3001/${strand.image}`}
+                          {/** <div className="image-container">
+                            {strand.image.split(',').map((filename, index) => (
+                              <img
+                                key={index}
+                                src={`http://localhost:3001/uploads/${filename}`}
                                 alt=""
-                                className="h-100 w-100 rounded-lg transition-transform transform scale-100 group-hover:scale-150"
-                            />
+                                className="image-item"
+                              />
+                            ))}
+                    
+                          </div>
+                          */}
+                          <img
+                            src={`http://localhost:3001/uploads/${strand.image.split(',')[0]}`}
+                            alt=""
+                            className="h-100 w-100 rounded-lg transition-transform transform scale-100 group-hover:scale-150"
+                          />
                         </div>
-                        </td>
+                      </td>
                         <td className="px-6 py-4 whitespace-no-wrap">{strand.name}</td>
-                        <td className="px-6 py-4 whitespace-no-wrap w-500">
-                        {truncateText(strand.description, 250)} {/* Adjust the max length */}
+                        <td className="px-6 py-4 whitespace-no-wrap w-300">
+                        {truncateText(strand.description, 100)} {/* Adjust the max length */}
                         </td>
-                        <td className="px-6 py-4 whitespace-no-wrap">
+                        <td className="px-2 py-4 whitespace-no-wrap">
                             <button className="text-red-600 hover:text-red-800"
                                 onClick={() => openDeleteDialog(strand.id)}
                             >
