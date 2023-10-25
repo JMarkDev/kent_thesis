@@ -159,11 +159,11 @@ function CourseTable({ courses }) {
               as="h3"
               className="text-lg font-medium leading-6 text-gray-900"
             >
-              Delete User
+              Delete Course
             </Dialog.Title>
             <div className="mt-2">
               <p className="text-sm text-gray-500">
-                Are you sure you want to delete this user?
+                Are you sure you want to delete this course?
               </p>
             </div>
 

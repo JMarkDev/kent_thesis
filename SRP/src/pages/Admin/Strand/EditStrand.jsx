@@ -80,7 +80,17 @@ function EditStrand() {
       alert(response.data.data); 
       navigate('/strand');
     } catch (error) {
-      alert(error.response.data.data); 
+      console.error('Error updating strand', error);
+      if (error.response) {
+        
+        if (error.response.status === 400) {
+          alert('Title already exists. Please choose a different title.');
+        } else {
+          alert('An error occurred during strand update.');
+        }
+      } else {
+        alert('An error occurred during strand update.');
+      }
     }
   }
 

@@ -62,7 +62,7 @@ const [open, setOpen] = useState(false);
     <nav className=' border-gray-200 mx-2  px-3 py-3 rounded dark:bg-gray-800 bg-neutral-400 mt-3'>
       <div className='container flex justify-between items-center mx-auto pt-3 mb-2'>
         <div className='flex justify-start'>
-          <h1 className="ml-5 text-xl font-bold">{pageTitle}</h1>
+          <h1 className="ml-5 text-xl font-bold dark:text-white">{pageTitle}</h1>
         </div>
 
         

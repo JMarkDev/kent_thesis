@@ -1,19 +1,18 @@
+import React, { useState, useEffect } from 'react';
+import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
 
-
-import React, { PureComponent } from 'react';
-import { PieChart, Pie, Sector, Cell, ResponsiveContainer } from 'recharts';
-const data = [
-    { name: 'ABM', value: 100 },
-    { name: 'STEM', value: 150 },
-    { name: 'HUMMS', value: 100 },
-    { name: 'SMAW', value: 120 },
-    
+const COLORS = [ 
+    '#FF5733', 
+    '#8daa3b', 
+    '#1f82c1', 
+    '#9333ea', 
+    '#e88245', 
+    '#6c5b7b', 
+    '#00a8cc'  
 ];
 
-const COLORS = ['#fdba74', '#bef264', '#38bdf8', '#9333ea'];
-
 const RADIAN = Math.PI / 180;
-const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent, index }) => {
+const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent }) => {
     const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
     const x = cx + radius * Math.cos(-midAngle * RADIAN);
     const y = cy + radius * Math.sin(-midAngle * RADIAN);
@@ -24,70 +23,52 @@ const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, per
         </text>
     );
 };
-const PieComponent = () => {
+const PieComponent = ({ data }) => {
+    const [pieData, setPieData] = useState([]);
+
+    useEffect(() => {
+        const indexOfTotal = data.findIndex(item => item.strand === 'TOTAL');
+        if (indexOfTotal !== -1) {
+            // Create a new array without the first element with strand 'TOTAL'
+            const pieDatas = [...data.slice(0, indexOfTotal), ...data.slice(indexOfTotal + 1)];
+            setPieData(pieDatas);
+        } else {
+            setPieData(data);
+        }
+    }, [data]);
+
     return (
         <div>
-                <div >
+            <div>
                 <ResponsiveContainer width="100%" height={400}>
-                <PieChart >
-                    <Pie
-                        data={data}
-                        cx="50%"
-                        cy="50%"
-                        labelLine={false}
-                        label={renderCustomizedLabel}
-                        outerRadius={150}
-                        fill="#8884d8"
-                        dataKey="value"
-                    >
-                        {data.map((entry, index) => (
-                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                        ))}
-                    </Pie>
-                </PieChart>
+                    <PieChart>
+                        <Pie
+                            data={pieData}
+                            cx="50%"
+                            cy="50%"
+                            labelLine={false}
+                            label={renderCustomizedLabel}
+                            outerRadius={150}
+                            fill="#8884d8"
+                            dataKey="count"
+                        >
+                            {pieData.map((entry, index) => (
+                                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                            ))}
+                        </Pie>
+                    </PieChart>
                 </ResponsiveContainer>
-                </div>
-                <div className='grid gap-4 sm:grid-cols-2  md:grid-cols-4 lg:grid-cols-4 justify-center mx-auto items-center'>
-                {
-                  
-                     data.map((item)=>(
-                        <p className='flex cursor-pointer font-bold justify-center items-center mx-auto'>{item.name}</p>
-                              ))
-
-                }
-                </div>
-                <div className='grid gap-4 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-4'>
-                    {
-                         COLORS.map((item)=>(
-                <div className="flex h-[20px] w-[20px] justify-center items-center mx-auto mb-4" style={{backgroundColor:item}}>
-
-                  </div>
-                         ))
-  
-                    }
-                  
-
-                </div>
-        
-
+            </div>
+            <div className="grid grid-cols-3 gap-4 justify-center mx-auto items-center">
+                {pieData.map((item, index) => (
+                    <div key={`color-${index}`} className="flex justify-start items-center mx-auto mb-4">
+                        <div className="w-6 h-6 mr-2" style={{ backgroundColor: COLORS[index % COLORS.length] }}></div>
+                        <p className='flex cursor-pointer font-bold justify-center items-center mx-auto'>{item.strand}</p>
+                    </div>
+                ))}
+            </div>
         </div>
     )
 }
 
-export default PieComponent
-
-
-
-
-
-
-
-// export default class Example extends PureComponent {
-//     static demoUrl = 'https://codesandbox.io/s/pie-chart-with-customized-label-dlhhj';
-
-//     render() {
-//         return (
-           
-//         );
-//     }
-// }
+export default PieComponent;

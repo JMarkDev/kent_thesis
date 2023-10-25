@@ -7,6 +7,7 @@ const cors = require("cors");
 const salt = 5;
 const app = express();
 const bodyParser = require('body-parser');
+const date = require('date-and-time');
 const studentsRoute = require("./src/Routes/Students.js")
 const courseRoute = require("./src/Routes/Course.js")
 const strandRoute = require("./src/Routes/Strand.js")
@@ -52,7 +53,6 @@ app.post("/strand/add", upload.array('image', 5), async (req, res) => {
 
     fs.rename(`./uploads/${file.filename}`, `./uploads/${newFileName}`, function (err) {
       if (err) {
-        // Handle the error appropriately
         console.error('Error renaming file:', err);
         res.status(500).json({ Error: 'File upload error' });
         return;
@@ -67,34 +67,33 @@ app.post("/strand/add", upload.array('image', 5), async (req, res) => {
   const conn = db.connection;
   const { name, description, recommendationConditions } = req.body;
 
-  // Check if the name already exists in the database
   const checkNameExist = "SELECT COUNT(*) AS count FROM strand WHERE name = ?";
   const checkNameValues = [name];
 
   conn.query(checkNameExist, checkNameValues, (err, result) => {
     if (err) {
-      // Handle the error appropriately
       console.error('Error checking name existence:', err);
       res.status(500).json({ Error: 'Database error' });
       return;
     }
 
     if (result[0].count > 0) {
-      // Name already exists, respond with an error
       res.status(400).json({ Error: 'Strand name already exists' });
     } else {
-      // Name does not exist, proceed with insertion
-      const query = "INSERT INTO strand (image, name, description, recommendationConditions) VALUES (?, ?, ?, ?)";
+      const query = "INSERT INTO strand (image, name, description, recommendationConditions, createdAt) VALUES (?, ?, ?, ?, ?)";
+      const createdAt = new Date()
+      const formattedDate = date.format(createdAt, 'YY/MM/DD HH:mm:ss');
+      
       const values = [
         imageFileNames.join(','),
         name,
         description,
-        recommendationConditions
+        recommendationConditions,
+        formattedDate
       ];
 
       conn.query(query, values, (err, result) => {
         if (err) {
-          // Handle the error appropriately
           console.error('Error inserting data:', err);
           res.status(500).json({ Error: 'Database error' });
           return;
@@ -136,7 +135,7 @@ app.put("/strand/edit/:id", upload.array('image', 5), async (req, res) => {
       imageFileNames.push(newFileName);
     }
 
-    const { id } = req.params; // Extract ID from the request parameters
+    const { id } = req.params; 
     const { name, description, recommendationConditions } = req.body;
 
     const checkNameExist = "SELECT COUNT(*) AS count FROM strand WHERE name = ?";
@@ -150,16 +149,18 @@ app.put("/strand/edit/:id", upload.array('image', 5), async (req, res) => {
       }
 
       if (results[0].count > 0) {
-        // Name already exists, respond with an error
         res.status(400).json({ Error: 'Strand name already exists' });
       } else {
-        // Name does not exist, proceed with insertion
-        const query = "UPDATE strand SET name = ?, description = ?, image = ?, recommendationConditions = ? WHERE id = ?";
+        const query = "UPDATE strand SET name = ?, description = ?, image = ?, recommendationConditions = ?, updatedAt = ? WHERE id = ?";
+        const updatedAt = new Date();
+        const formattedDate = date.format(updatedAt, 'YY/MM/DD HH:mm:ss');
+        
         const values = [
           name,
           description,
           imageFileNames.join(','),
           recommendationConditions,
+          formattedDate, 
           id
         ];
 
@@ -191,14 +192,17 @@ app.post('/course/upload', upload.single('image'), async (req, res) => {
   const conn = db.connection;
 
   const { title, description, image, strand } = req.body;
-  const query =
-    'INSERT INTO course (title, description, image, strand) VALUES (?,?,?,?)';
+  const query ='INSERT INTO course (title, description, image, strand, createdAt) VALUES (?,?,?,?,?)';
+
+  const createdAt = new Date();
+  const formattedDate = date.format(createdAt, 'YY/MM/DD HH:mm:ss');
 
   const values = [
     title,
     description,
     `uploads/${newFileName}`,
     strand,
+    formattedDate
   ];
 
   await conn.connect((err) => {
@@ -224,7 +228,6 @@ app.put('/course/edit/:id', upload.single('image'), async (req, res) => {
   const { id } = req.params;
   const { title, image, description, strand } = req.body;
 
-  // Check if the new title already exists except for the current course ID
   const titleCheckQuery = `SELECT * FROM course WHERE title = ? AND id != ?`;
   const titleCheckValues = [title, id];
 
@@ -234,12 +237,13 @@ app.put('/course/edit/:id', upload.single('image'), async (req, res) => {
     }
 
     if (titleCheckResult.length > 0) {
-      // A course with the same title already exists (excluding the current course)
       res.status(400).json({ Error: 'Title already exists' });
     } else {
-      // No course with the same title found, proceed with the update
-      const query = `UPDATE course SET image = 'uploads/${newFileName}', title = ?, description = ?, strand = ? WHERE id = ?`;
-      const values = [title, description, strand, id];
+      const query = `UPDATE course SET image = 'uploads/${newFileName}', title = ?, description = ?, strand = ?, updatedAt = ? WHERE id = ?`;
+      const updatedAt = new Date();
+      const formattedDate = date.format(updatedAt, 'YY/MM/DD HH:mm:ss');
+
+      const values = [title, description, strand, formattedDate, id];
 
       conn.query(query, values, (err, result) => {
         if (err) {
@@ -280,12 +284,10 @@ app.post('/register', async (req, res) => {
   const { name, username, password, role, gender } = req.body;
 
   try {
-    // Validate incoming data
     if (!name || !username || !password || !role || !gender) {
       return res.status(400).json({ status: "error", message: "Missing required fields" });
     }  
 
-    // Check if the username already exists
     const usernameExists = await new Promise((resolve, reject) => {
       const checkQuery = `
         SELECT COUNT(*) as count FROM register WHERE username = ?
@@ -295,7 +297,6 @@ app.post('/register', async (req, res) => {
       conn.query(checkQuery, [username, username], (err, results) => {
         if (err) reject(err);
     
-        // Check if the count is greater than 0 in any of the results
         const exists = results.some((result) => result.count > 0);
         resolve(exists);
       });
@@ -308,12 +309,13 @@ app.post('/register', async (req, res) => {
       return res.status(400).json({ status: "error", message: "Username already exists. Please choose a different username." });
     }
     
-    // Hash the password
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    // Insert user into the database
-    const insertQuery = 'INSERT INTO register (name, username, password, role, gender) VALUES (?, ?, ?, ?, ?)';
-    const values = [name, username, hashedPassword, role, gender];
+    const insertQuery = 'INSERT INTO register (name, username, password, role, gender, createdAt) VALUES (?, ?, ?, ?, ?, ?)';
+    const createdAt = new Date();
+    const formattedDate = date.format(createdAt, 'YY/MM/DD HH:mm:ss');
+
+    const values = [name, username, hashedPassword, role, gender, formattedDate];
     
     conn.query(insertQuery, values, (err, result) => {
       if (err) {

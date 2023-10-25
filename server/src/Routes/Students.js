@@ -3,6 +3,7 @@ const Database = require("../configs/Database");
 const router = express.Router();
 const bcrypt = require("bcrypt");
 const salt = 5;
+const date = require('date-and-time');
 
 router.get("/fetch", async (req, res) => {
   const db = new Database();
@@ -91,12 +92,16 @@ router.put('/update/:id', async (req, res) => {
     // Hash the password
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    const query = "UPDATE register SET name = ?, username = ?, password = ?, gender = ?  WHERE id = ?";
+    const query = "UPDATE register SET name = ?, username = ?, password = ?, gender = ?, updatedAt = ? WHERE id = ?";
+    const updatedAt = new Date();
+    const formattedDate = date.format(updatedAt, 'YY/MM/DD HH:mm:ss');
+
     const values = [
       name,
       username,
       hashedPassword,
       gender,
+      formattedDate,
       id
     ];
 

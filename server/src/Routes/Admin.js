@@ -81,13 +81,16 @@ router.get("/fetch", async (req, res) => {
       // Hash the password
       const hashedPassword = await bcrypt.hash(password, salt);
   
-      const query = "UPDATE admin SET name = ?, username = ?, password = ?, gender = ?  WHERE id = ?";
+      const query = "UPDATE admin SET name = ?, username = ?, password = ?, gender = ? updatedAt = ? WHERE id = ?";
+      const updatedAt = new Date();
+      const formattedDate = date.format(updatedAt, 'YY/MM/DD HH:mm:ss');
       const values = [
+        id,
         name,
         username,
         hashedPassword,
         gender,
-        id
+        formattedDate
       ];
   
       conn.query(query, values, (err, result) => {

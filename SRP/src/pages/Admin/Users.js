@@ -3,7 +3,6 @@
   import axios from "axios";
   import { Dialog, Transition } from "@headlessui/react";
   import { Fragment } from "react";
-  import { ExclamationIcon } from "@heroicons/react/outline";
   import { MdDelete } from "react-icons/md";
 
   export function Users() {
@@ -164,7 +163,8 @@
               {suggestions.length === 0
                 ? userData.map(({ id, name, username, gender,role, recommended }) => (
                     <tr key={id}>
-                      <td className="p-4 md:table-cell">
+                    
+                    <td className="p-4 md:table-cell">
                         <Typography
                           variant="small"
                           color="blue-gray"
@@ -209,17 +209,10 @@
                           {role}
                         </Typography>
                       </td>
-                      {/* Add more columns for other user properties */}
                       <td className="p-4 md:table-cell">
-                        {/* Add recommended data here */}
-                        <Typography
-                          variant="small"
-                          color="blue-gray"
-                          className="font-normal"
-                        >
                           {recommended}
-                        </Typography>
                       </td>
+                    
                       <td className="p-4 md:table-cell">
                         {/* Add delete action with trashcan icon */}
                         <button
