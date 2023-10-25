@@ -23,7 +23,10 @@ const Dashboard = () => {
         '#9333ea', 
         '#e88245', 
         '#6c5b7b', 
-        '#00a8cc'  
+        '#00a8cc',
+        '#363062',
+        '#1B9C85',
+        '#3D3C42'  
     ]
     const [strand, setStrand] = useState([]);
     const [selectedYear, setSelectedYear] = useState(2023);
@@ -121,7 +124,10 @@ const Dashboard = () => {
                         >
                             <CartesianGrid strokeDasharray="3 3" />
                             <XAxis dataKey="month" />
-                            <YAxis domain={[0, 'dataMax + 1']} />
+                            {/*<YAxis domain={[0, 'dataMax + 1']} />
+                            <YAxis domain={[0, 500]} /> 
+                            */}
+                            <YAxis domain={[0, 500]} ticks={[0, 100, 200, 300, 400, 500]} />
                             <Tooltip />
                             <Legend />
                             {data && data.length > 0 && Object.keys(data[0])

@@ -8,7 +8,10 @@ const COLORS = [
     '#9333ea', 
     '#e88245', 
     '#6c5b7b', 
-    '#00a8cc'  
+    '#00a8cc',
+    '#363062',
+    '#1B9C85',
+    '#3D3C42'  
 ];
 
 const RADIAN = Math.PI / 180;
