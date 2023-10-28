@@ -14,6 +14,7 @@ const strandRoute = require("./src/Routes/Strand.js")
 const recommendedRoute = require("./src/Routes/Recommended.js")
 const rankingRoute = require("./src/Routes/Ranking.js")
 const gradesRoute = require("./src/Routes/Grades.js")
+const filteredRecommendedRoute = require("./src/Routes/FilterRecommeded.js")
 
 app.use(cors({
   origin: "http://localhost:3000",
@@ -28,6 +29,7 @@ app.use('/strand', strandRoute);
 app.use('/recommended', recommendedRoute);
 app.use('/rank', rankingRoute);
 app.use('/grade', gradesRoute);
+app.use('/filter', filteredRecommendedRoute);
 
 app.use(cookieParser());
 
@@ -108,7 +110,14 @@ app.put("/strand/edit/:id", upload.array('image', 5), async (req, res) => {
   const db = new Database();
   const conn = db.connection;
 
-  const imageFileNames = [];
+  let imageFilenames = [];
+  if (req.body.image) {
+    try {
+      imageFilenames = JSON.parse(req.body.image);
+    } catch (error) {
+      console.error('Error parsing JSON:', error);
+    }
+  }
 
   // Move file renaming into a function to avoid duplication
   async function renameFile(file) {
@@ -130,55 +139,45 @@ app.put("/strand/edit/:id", upload.array('image', 5), async (req, res) => {
 
   try {
     // Rename files asynchronously and collect their names
-    for (const file of req.files) {
-      const newFileName = await renameFile(file);
-      imageFileNames.push(newFileName);
+    for (const imageName of imageFilenames) {
+      const file = req.files.find((f) => f.originalname === imageName);
+
+      if (file) {
+        const newFileName = await renameFile(file);
+        imageFilenames.push(newFileName);
+      }
     }
 
     const { id } = req.params; 
     const { name, description, recommendationConditions } = req.body;
 
-    const checkNameExist = "SELECT COUNT(*) AS count FROM strand WHERE name = ?";
-    const checkNameValues = [name];
+    const query = "UPDATE strand SET name = ?, description = ?, image = ?, recommendationConditions = ?, updatedAt = ? WHERE id = ?";
+    const updatedAt = new Date();
+    const formattedDate = date.format(updatedAt, 'YY/MM/DD HH:mm:ss');
 
-    conn.query(checkNameExist, checkNameValues, (err, results) => {
+    const values = [
+      name,
+      description,
+      imageFilenames.join(','),
+      recommendationConditions,
+      formattedDate, 
+      id
+    ];
+
+    conn.query(query, values, (err, result) => {
       if (err) {
-        console.error('Error checking name existence:', err);
+        console.error('Error updating data:', err);
         res.status(500).json({ Error: 'Database error' });
         return;
       }
-
-      if (results[0].count > 0) {
-        res.status(400).json({ Error: 'Strand name already exists' });
-      } else {
-        const query = "UPDATE strand SET name = ?, description = ?, image = ?, recommendationConditions = ?, updatedAt = ? WHERE id = ?";
-        const updatedAt = new Date();
-        const formattedDate = date.format(updatedAt, 'YY/MM/DD HH:mm:ss');
-        
-        const values = [
-          name,
-          description,
-          imageFileNames.join(','),
-          recommendationConditions,
-          formattedDate, 
-          id
-        ];
-
-        conn.query(query, values, (err, result) => {
-          if (err) {
-            console.error('Error inserting data:', err);
-            res.status(500).json({ Error: 'Database error' });
-            return;
-          }
-          res.json({ data: "Strand updated successfully" });
-        });
-      }
+      res.json({ data: "Strand updated successfully" });
     });
   } catch (error) {
     console.error(error);
     res.status(500).json({ Error: 'Internal Server Error' });
   }
 });
+
 
 
 app.post('/course/upload', upload.single('image'), async (req, res) => {

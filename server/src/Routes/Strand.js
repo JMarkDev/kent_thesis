@@ -201,7 +201,8 @@ router.get('/monthly/:year', async (req, res) => {
             monthName AS month,
             ${caseStatements.join(', ')}
         FROM (
-          SELECT 1 AS monthIndex, 'Jan ${selectedYear}' AS monthName
+          SELECT 1 AS monthIndex, 
+          'Jan ${selectedYear}' AS monthName
           UNION SELECT 2, 'Feb ${selectedYear}'
           UNION SELECT 3, 'Mar ${selectedYear}'
           UNION SELECT 4, 'Apr ${selectedYear}'
