@@ -9,7 +9,6 @@ export default function Strands() {
     axios.get('http://localhost:3001/strand/fetch')
     .then((res) => {
       setStrand(res.data)
-      console.log(res.data[0].image)
     })
     .catch((err) => {
       console.log(err)

@@ -68,10 +68,54 @@ const Input = () => {
     });
   };
 
+  function calculateStrandAverage(grades, subjectsForStrand) {
+    const subjectGrades = subjectsForStrand.map(subject => parseFloat(grades[subject]) || 0);
+    const sum = subjectGrades.reduce((acc, grade) => acc + grade, 0);
+    const average = sum / subjectGrades.length;
+    return average;
+  }
+  useEffect(() => {
   const recommendationConditions = async () => {
   try {
     const response = await axios.get('http://localhost:3001/strand/recommendation-conditions/all');
     const data = response.data;
+    console.log(data)
+
+    const strandSubjects = {}
+
+    for (const strand in data) {
+      const subjects = data[strand];
+      const subjectNames = Object.keys(subjects);
+      strandSubjects[strand] = subjectNames;
+    }
+
+    console.log(strandSubjects)
+
+    const strandAverages = {};
+
+    for (const strand in strandSubjects) {
+      const subjectsForStrand = strandSubjects[strand];
+      const average = calculateStrandAverage(grades, subjectsForStrand);
+      strandAverages[strand] = average;
+    }
+
+    const sortAverages = Object.entries(strandAverages).sort((a, b) => b[1] - a[1]);
+
+    console.log(sortAverages);
+
+
+    
+    // const strandAverages = {};
+
+    // for (const strand in data) {
+    //   const subjects = data[strand];
+    //   const average = Object.values(subjects).reduce((total, grade) => total + parseInt(grade), 0) / Object.keys(subjects).length;
+    //   strandAverages[strand] = average;
+    // }
+
+    // console.log(strandAverages)
+    // const sortAverages = Object.entries(strandAverages).sort((a, b) => b[1] - a[1]);
+    // console.log(sortAverages)
 
     setConditionsData(data);
   } catch (err) {
@@ -79,9 +123,8 @@ const Input = () => {
   }
 };
 
-useEffect(() => {
   recommendationConditions()
-}, [])
+}, [grades, strandRank])
 
   const handleSubmit = async (e) => {
   e.preventDefault();
@@ -125,8 +168,6 @@ const handleCourseSelectChange = (selectedTitle) => {
 
   const selectedCourse = courseOption.find((course) => course.title === selectedTitle);
   const selectedStrand = selectedCourse.strand;
-  console.log(selectedStrand);
-
   const conditionsData = getConditionsForStrand(selectedStrand);
 
   if (conditionsData) {
@@ -174,24 +215,19 @@ const handleCourseSelectChange = (selectedTitle) => {
     !grades.esp ||
     !selectedCourseTitle ;
 
-    const canSelectCourse = (strandName) => {
-      const conditionsData = getConditionsForStrand(strandName);
+    // const canSelectCourse = (strandName) => {
+    //   const conditionsData = getConditionsForStrand(strandName);
+      
+    //   // Define a function to check conditions for a given subject and grade
+    //   const checkCondition = (subject, requiredGrade) => {
+    //     return grades[subject] >= requiredGrade;
+    //   };
     
-      if (!conditionsData) {
-        // If conditions for the strand are not found, disable the option
-        return false;
-      }
-    
-      // Define a function to check conditions for a given subject and grade
-      const checkCondition = (subject, requiredGrade) => {
-        return grades[subject] >= requiredGrade;
-      };
-    
-      // Check the conditions for each subject in the conditions data
-      return Object.entries(conditionsData).every(([subject, requiredGrade]) => {
-        return checkCondition(subject, parseInt(requiredGrade));
-      });
-    };
+    //   // Check the conditions for each subject in the conditions data
+    //   return Object.entries(conditionsData).every(([subject, requiredGrade]) => {
+    //     return checkCondition(subject, parseInt(requiredGrade));
+    //   });
+    // };
 
   return (
     <div className="flex flex-col justify-center bg-[#99f6e4] dark:bg-[#14b8a6] items-center h-full">
@@ -481,15 +517,12 @@ const handleCourseSelectChange = (selectedTitle) => {
                 {courseOption.map((course) => (
                   <Listbox.Option
                     key={course.id}
-                    title={!canSelectCourse(course.strand) ? "This course doesn't meet the requirements" : null}
+                    // title={!canSelectCourse(course.strand) ? "This course doesn't meet the requirements" : null}
                     className={({ active }) =>
                       classNames(
                         active ? 'bg-indigo-600 text-white' : 'text-gray-900',
                         'relative cursor-default select-none py-2 pl-3 pr-9',
-                        {
-                          'pointer-events-none': !canSelectCourse(course.strand),
-                          'opacity-50': !canSelectCourse(course.strand),
-                        }
+                        
                       )
                     }
                     value={course.title}
@@ -497,7 +530,7 @@ const handleCourseSelectChange = (selectedTitle) => {
                       // Call the parent's handleCourseSelectChange function
                       handleCourseSelectChange(course.title);
                     }}
-                    disabled={!canSelectCourse(course.strand)}
+                    // disabled={!canSelectCourse(course.strand)}
                   >
                     {({ selected, active }) => (
                       <>

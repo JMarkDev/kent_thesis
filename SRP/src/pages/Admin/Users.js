@@ -4,13 +4,14 @@
   import { Dialog, Transition } from "@headlessui/react";
   import { Fragment } from "react";
   import { MdDelete } from "react-icons/md";
-
+  import Dropdown from '../../../src/components/Dropdown'
   export function Users() {
     const [userData, setUserData] = useState([]);
     const [searchQuery, setSearchQuery] = useState("");
     const [suggestions, setSuggestions] = useState([]);
     const [deleteUserId, setDeleteUserId] = useState(null);
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+    const [filterData, setFilterData] = useState([]);
 
     useEffect(() => {
       // Specify the role you want to fetch (in this case, "student")
@@ -61,9 +62,38 @@
       closeDeleteDialog();
     };
 
+    useEffect(() => {
+      const handleFilterCards = async () => {
+          try {
+              const response = await axios.get('http://localhost:3001/filter/fetch/all');
+              setFilterData(response.data);
+          } catch (err) {
+              console.log(err);
+          }
+      }
+      handleFilterCards();
+  }, [])
+
+
+    const handleFilter = async (strand) => {
+      if(strand === 'Default'){
+        const response = await axios.get('http://localhost:3001/filter/fetch/all');
+        setFilterData(response.data);
+      }
+      else{
+        try {
+          const response = await axios.get(`http://localhost:3001/filter/fetch/${strand}`);
+          setFilterData(response.data);
+        } catch (err) {
+            console.log(err);
+        }
+      }
+  
+  };
+
     return (
       <div className="py-5 px-2 bg-gray-200 dark:bg-gray-900 min-h-screen w-auto">
-        <div className="flex flex-col md:flex-row items-start mb-4">
+        <div className="flex flex-col md:flex-row items-center justify-between mb-4">
           <div className="flex space-x-2">
             <input
               type="text"
@@ -89,6 +119,10 @@
               </svg>
             </button>
           </div>
+          <div>
+            <Dropdown handleFilter={handleFilter}/>
+          </div>
+          
         </div>
         <Card className="w-full overflow-x-auto bg-white">
           <table className="w-full table-auto text-center">
@@ -161,7 +195,7 @@
             </thead>
             <tbody>
               {suggestions.length === 0
-                ? userData.map(({ id, name, username, gender,role, recommended }) => (
+                ? filterData.map(({ id, name, username, gender,role, recommended }) => (
                     <tr key={id}>
                     
                     <td className="p-4 md:table-cell">
@@ -224,7 +258,7 @@
                       </td>
                     </tr>
                   ))
-                : suggestions.map(({ id, name, username, gender, role }) => (
+                : suggestions.map(({ id, name, username, gender, role, recommended }) => (
                     <tr key={id}>
                       <td className="p-4 md:table-cell">
                         <Typography
@@ -273,7 +307,7 @@
                       </td>
                       {/* Add more columns for other user properties */}
                       <td className="p-4 md:table-cell">
-                        {/* Add recommended data here */}
+                      {recommended}
                       </td>
                       <td className="p-4 md:table-cell">
                         {/* Add delete action with trashcan icon */}

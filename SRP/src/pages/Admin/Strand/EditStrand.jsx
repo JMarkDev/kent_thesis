@@ -3,12 +3,13 @@ import { Link } from 'react-router-dom';
 import { TbArrowBackUp } from 'react-icons/tb';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { ImCancelCircle } from 'react-icons/im';
 
 function EditStrand() {
   const [formData, setFormData] = useState({
     name: '',
     description: '',
-    image: null,
+    image: [],
     selectedSubjects: [],
     recommendationConditions: {}
   });
@@ -33,73 +34,96 @@ function EditStrand() {
     axios.get(`http://localhost:3001/strand/fetch/${id}`)
       .then((response) => {
         const data = response.data;
+        const imageData = data.image.split(',');
+        const recommendationConditions = JSON.parse(data.recommendationConditions || '{}');
+
         setFormData((prevFormData) => ({
           ...prevFormData,
           name: data.name,
           description: data.description,
+          image: imageData,
+          selectedSubjects: Object.keys(recommendationConditions),
+          recommendationConditions: {
+            ...prevFormData.recommendationConditions,
+            ...recommendationConditions,
+        },
         }));
       })
       .catch((error) => {
         console.error('Error fetching data', error);
       });
   }, [id, setFormData]);
-  
 
   const handleInputChange = (e) => {
     const { name, files } = e.target;
     if (name === 'image') {
-      setFormData({
-        ...formData,
-        [name]: files, 
-      });
+      const newImages = Array.from(files).map(file => file.name); // Convert FileList to an array of file names
+      setFormData((prevFormData) => ({
+        ...prevFormData,
+        [name]: [...prevFormData.image, ...newImages],
+      }));
     } else {
       setFormData({
         ...formData,
         [name]: e.target.value,
       });
     }
-  };  
+  };
 
   const handleUpdate = async (e) => {
     e.preventDefault();
-
+  
     const updatedFormData = new FormData();
-
+  
     updatedFormData.append('name', formData.name);
     updatedFormData.append('description', formData.description);
     updatedFormData.append('recommendationConditions', JSON.stringify(formData.recommendationConditions));
-
-    if (formData.image) {
-      for (let i = 0; i < formData.image.length; i++) {
-        updatedFormData.append('image', formData.image[i]);
+  
+    // Append the image filenames as a JSON string with the key 'image'
+    updatedFormData.append('image', JSON.stringify(formData.image));
+    if(e.target.type === "submit" ) {
+      try {
+        const response = await axios.put(`http://localhost:3001/strand/edit/${id}`, updatedFormData);
+        alert(response.data.data);
+        navigate('/strand');
+      } catch (error) {
+        console.error('Error updating strand', error);
       }
-    }
-
-    try {
-      const response = await axios.put(`http://localhost:3001/strand/edit/${id}`, updatedFormData);
-      alert(response.data.data); 
-      navigate('/strand');
-    } catch (error) {
-      console.error('Error updating strand', error);
-      if (error.response) {
-        
-        if (error.response.status === 400) {
-          alert('Title already exists. Please choose a different title.');
-        } else {
-          alert('An error occurred during strand update.');
-        }
-      } else {
-        alert('An error occurred during strand update.');
-      }
-    }
+    } 
+    
   }
 
-  const handleSubjectChange = (selectedSubjects) => {
-    // When subjects are selected, update the state
-    const updatedFormData = { ...formData };
-    updatedFormData.selectedSubjects = selectedSubjects;
-    setFormData(updatedFormData);
+  const removeImage = (index) => {
+    setFormData((prevFormData) => {
+      const updatedImages = [...prevFormData.image];
+      updatedImages.splice(index, 1);
+      
+      return {
+        ...prevFormData,
+        image: updatedImages,
+      };
+    });
   };
+
+  const handleSubjectChange = (selectedSubjects) => {
+    setFormData((prevFormData) => {
+      const updatedRecommendationConditions = { ...prevFormData.recommendationConditions };
+  
+      // Remove subjects that are unchecked
+      for (const subject in updatedRecommendationConditions) {
+        if (!selectedSubjects.includes(subject)) {
+          delete updatedRecommendationConditions[subject];
+        }
+      }
+  
+      return {
+        ...prevFormData,
+        selectedSubjects,
+        recommendationConditions: updatedRecommendationConditions,
+      };
+    });
+  };
+  
   
     const handleRecommendationChange = (subject, value) => {
     if (!/^(100|[1-9][0-9]?)$/.test(value)) {
@@ -140,18 +164,36 @@ function EditStrand() {
             />
           </div>
           <div className="mb-4">
-            <label htmlFor="image" className="block text-gray-700 font-bold">
-              Image:
-            </label>
-            <input
-              type="file"
-              id="image"
-              name="image"
-              onChange={handleInputChange}
-              className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring focus:ring-indigo-200"
-              required
-              multiple
+  <label htmlFor="image" className="block text-gray-700 font-bold">
+    Image:
+  </label>
+  <input
+    type="file"
+    id="image"
+    name="image"
+    onChange={handleInputChange}
+    className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring focus:ring-indigo-200"
+    // required
+    multiple
+  />
+      <div className="flex flex-wrap">
+        {formData.image?.map((image, index) => (
+          <div key={index} className="relative mt-4 ml-3">
+            <img
+              src={`http://localhost:3001/uploads/${image}`}
+              alt="strand"
+              className="w-[100px] h-[100px] object-cover rounded-lg"
             />
+            <button
+              onClick={() => removeImage(index)}
+              className="absolute top-0 right-0 text-red-500 bg-gray-400 rounded-full cursor-pointer text-2xl"
+            >
+              <ImCancelCircle className='text-2xl'/>
+            </button>
+          </div>
+        ))}
+      </div>
+        
           </div>
           <div className="mb-4">
             <label htmlFor="description" className="block text-gray-700 font-bold">
@@ -176,7 +218,8 @@ function EditStrand() {
                 <input
                 type="checkbox"
                 value={subject}
-                checked={(formData.selectedSubjects || []).includes(subject)}
+                //value={formData.recommendationConditions[subject] || ''}
+                checked={formData.selectedSubjects.includes(subject)}
                 onChange={(e) => {
                   const selectedSubjects = [...formData.selectedSubjects];
                   if (e.target.checked) {
@@ -205,6 +248,7 @@ function EditStrand() {
                   type="number"
                   id={subject}
                   name={subject}
+                  // value={formData.selectedGrades[formData.selectedSubjects.indexOf(subject)]}
                   value={formData.recommendationConditions[subject] || ''}
                   onChange={(e) => handleRecommendationChange(subject, e.target.value)}
                   className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring focus:ring-indigo-200"
@@ -213,6 +257,7 @@ function EditStrand() {
             ))}
       
           <button
+            onClick={handleUpdate}
             type="submit"
             className="bg-indigo-600 w-full text-white py-2 px-4 rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring focus:ring-indigo-200"
           >

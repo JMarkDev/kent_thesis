@@ -2,17 +2,17 @@ import React, { useState, useEffect } from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
 
 const COLORS = [ 
-    '#FF5733', 
+    '#e88245', 
     '#8daa3b', 
     '#1f82c1', 
     '#9333ea', 
-    '#e88245', 
+    '#ff5733', 
     '#6c5b7b', 
-    '#00a8cc',
-    '#363062',
-    '#1B9C85',
-    '#3D3C42'  
+    '#ffcc29', 
+    '#00a8cc' 
 ];
+
+const modifiedCOLORS = COLORS.slice(1);
 
 const RADIAN = Math.PI / 180;
 const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent }) => {
@@ -56,7 +56,7 @@ const PieComponent = ({ data }) => {
                             dataKey="count"
                         >
                             {pieData.map((entry, index) => (
-                                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                <Cell key={`cell-${index}`} fill={modifiedCOLORS[index % COLORS.length]} />
                             ))}
                         </Pie>
                     </PieChart>
@@ -65,7 +65,7 @@ const PieComponent = ({ data }) => {
             <div className="grid grid-cols-3 gap-4 justify-center mx-auto items-center">
                 {pieData.map((item, index) => (
                     <div key={`color-${index}`} className="flex justify-start items-center mx-auto mb-4">
-                        <div className="w-6 h-6 mr-2" style={{ backgroundColor: COLORS[index % COLORS.length] }}></div>
+                        <div className="w-6 h-6 mr-2" style={{ backgroundColor: modifiedCOLORS[index % COLORS.length] }}></div>
                         <p className='flex cursor-pointer font-bold justify-center items-center mx-auto'>{item.strand}</p>
                     </div>
                 ))}

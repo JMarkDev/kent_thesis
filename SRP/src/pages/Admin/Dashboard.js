@@ -4,7 +4,6 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsi
 import PieComponent from './PieComponent';
 import axios from 'axios';
 import YearDropdown from '../../components/YearDropdown'
-
 const Dashboard = () => {
     const COLORS = [
         '#e88245', 
@@ -17,16 +16,14 @@ const Dashboard = () => {
         '#00a8cc'];
 
     const graphColors = [ 
-        '#FF5733', 
+        '#e88245', 
         '#8daa3b', 
         '#1f82c1', 
         '#9333ea', 
-        '#e88245', 
+        '#ff5733', 
         '#6c5b7b', 
-        '#00a8cc',
-        '#363062',
-        '#1B9C85',
-        '#3D3C42'  
+        '#ffcc29', 
+        '#00a8cc'
     ]
     const [strand, setStrand] = useState([]);
     const [selectedYear, setSelectedYear] = useState(2023);
@@ -53,7 +50,7 @@ const Dashboard = () => {
         return color;
     };
 
-    let graphColorIndex = 0;
+    let graphColorIndex = 1;
 
     const getGraphColor = () => {
         const color = graphColors[graphColorIndex];
@@ -85,16 +82,18 @@ const Dashboard = () => {
             <div className='grid grid-cols-1 md:grid-cols-4 lg:grid-cols-4 gap-4 '>
                 {
                     strand.map((strand, index) => (
-                        <div key={index} className='dark:bg-[#9333ea] border-2 h-[150px] rounded-[20px] bg-white border-l-[6px] flex items-center px-[30px] cursor-pointer hover:shadow-lg transform hover:scale-[103%] transition duration-300 ease-out '  style={{ borderColor: getNextColor() }}>
-                        <div className='flex'>
-                            <div className='rounded-full h-12 w-12 flex items-center justify-center bg-emerald-200'>
-                                <FaUser fontSize={28} color="" />
+                        <div key={index} className='dark:bg-[#9333ea] border-2 h-[150px] rounded-[20px] bg-white border-l-[6px] flex items-center px-[30px] cursor-pointer hover:shadow-lg transform hover:scale-[103%] transition duration-300 ease-out '  
+                        style={{ borderColor: getNextColor() }}
+                        >
+                            <div className='flex'>
+                                <div className='rounded-full h-12 w-12 flex items-center justify-center bg-emerald-200'>
+                                    <FaUser fontSize={28} color="" />
+                                </div>
+                                <div className='ml-5'>
+                                    <h2 className='text-[#030712] text-[16px] leading-[17px] px-[10px] font-bold'>{strand.strand}</h2>
+                                    <h1 className='text-[20px] leading-[24px] text-lg font-bold text-[#5a5c69] px-[10px] mt-[5px] dark:text-white'>{strand.count}</h1>
+                                </div>
                             </div>
-                            <div className='ml-5'>
-                                <h2 className='text-[#030712] text-[16px] leading-[17px] px-[10px] font-bold'>{strand.strand}</h2>
-                                <h1 className='text-[20px] leading-[24px] text-lg font-bold text-[#5a5c69] px-[10px] mt-[5px] dark:text-white'>{strand.count}</h1>
-                            </div>
-                        </div>
                         </div>
                     ))
                 }
@@ -124,10 +123,12 @@ const Dashboard = () => {
                         >
                             <CartesianGrid strokeDasharray="3 3" />
                             <XAxis dataKey="month" />
-                            {/*<YAxis domain={[0, 'dataMax + 1']} />
+                            <YAxis domain={[0, 'dataMax + 1']} />
+                            {/*
                             <YAxis domain={[0, 500]} /> 
-                            */}
+                            
                             <YAxis domain={[0, 500]} ticks={[0, 100, 200, 300, 400, 500]} />
+                            */}
                             <Tooltip />
                             <Legend />
                             {data && data.length > 0 && Object.keys(data[0])

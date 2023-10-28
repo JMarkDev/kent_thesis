@@ -43,12 +43,13 @@ const Navbar = () => {
           <img src={logo} alt="logo" className="w-full h-[30px]" />
         </div>
         <div className="hidden sm:block">
-          <ul className="flex items-center sm:gap-20">
+          <ul className="flex justify-center items-center gap-5">
+            
             <li>
               <Link
                 to="/Home"
-                className={`flex items-center gap-x-2 p-2 sm:p-3 text-base font-semibold rounded-2xl cursor-pointer text-[#243e63]${
-                  location.pathname === "/Home" ? "underline" : " dark:text-white hover:bg-sky-100 dark:hover:bg-gray-200"
+                className={`flex items-center gap-x-2 p-2 sm:p-3 text-base font-semibold rounded-2xl cursor-pointer text-[#243e63] ${
+                  location.pathname.includes("/Home") ? "underline" : " dark:text-white hover:bg-sky-100 dark:hover:bg-gray-200"
                 }`}
               >
                 Home
