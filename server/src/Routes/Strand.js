@@ -218,6 +218,7 @@ router.get('/monthly/:year', async (req, res) => {
         LEFT JOIN register AS r ON months.monthName = DATE_FORMAT(r.createdAt, '%b %Y')
         LEFT JOIN strand AS s ON r.recommended = s.name
         GROUP BY month
+        ORDER BY months.monthIndex;
       `;
 
       // Execute the dynamic query with the selected year

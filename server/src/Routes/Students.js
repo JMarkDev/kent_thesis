@@ -85,10 +85,6 @@ router.put('/update/:id', async (req, res) => {
       throw error;
     });
 
-    if (usernameExists) {
-      return res.status(400).json({ Error: "Username already exists" });
-    }
-
     // Hash the password
     const hashedPassword = await bcrypt.hash(password, salt);
 
@@ -111,17 +107,46 @@ router.put('/update/:id', async (req, res) => {
         res.status(500).json({ message: 'Internal server error' });
       } else {
         console.log(result);
-        res.json({ message: "Admin updated successfully" });
+        res.json({ message: "Updated successfully" });
       }
     });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Internal server error' });
   } finally {
-    // Close the database connection here, after the query is executed
     conn.end();
   }
 });
+
+router.put('/update/password/:id', async (req, res) => {
+  const db = new Database();
+  const conn = db.connection;
+
+  const { id } = req.params;
+  const { password} = req.body;
+
+  try {
+    const updateQuery = 'UPDATE register SET password = ?, updatedAt = ? WHERE id = ?';
+    const hashedPassword = await bcrypt.hash(password, salt);
+
+    const updatedAt = new Date();
+    const formattedDate = date.format(updatedAt, 'YY/MM/DD HH:mm:ss');
+    const values = [hashedPassword, formattedDate, id];
+
+    conn.query(updateQuery, values, (err, result) => {
+      if (err) {
+        console.error('Error updating password:', err);
+        res.status(500).json({ message: 'Internal server error' });
+      } else {
+        console.log('Password updated successfully');
+        res.json({ message: 'Password updated successfully' });
+      }
+    });
+  } catch (error) {
+    console.error('Update error:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+} )
 
 
 router.delete('/delete/:id', async (req, res) => {
@@ -175,20 +200,18 @@ router.put('/update-recommended/:id', async (req, res) => {
   const conn = db.connection;
 
   const { id } = req.params;
-  const { recommended } = req.body;
+  const { recommended, strand } = req.body;
 
   try {
-    const updateQuery = 'UPDATE register SET recommended = ? WHERE id = ?';
-    const values = [recommended, id];
+    const updateQuery = 'UPDATE register SET recommended = ?, strand = ? WHERE id = ?';
+    const values = [recommended, strand, id];
 
     conn.query(updateQuery, values, (err, result) => {
       if (err) {
         console.error('Error updating recommended:', err);
         res.status(500).json({ message: 'Internal server error' });
       } else {
-        console.log('Update result:', result); // Log the result of the update operation
         console.log('Recommended updated successfully');
-        console.log(values)
         res.json({ message: 'Recommended updated successfully' });
       }
     });
