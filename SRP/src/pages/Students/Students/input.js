@@ -1,15 +1,20 @@
-import React, { Fragment, useEffect, useState } from 'react';
+import React, { Fragment, useEffect, useState, useCallback } from 'react';
 import { Listbox, Transition } from '@headlessui/react';
 import { CheckIcon, ChevronUpDownIcon } from '@heroicons/react/20/solid';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import '../../../index.css';
+import Loading from '../../../components/loading/loading'
 function classNames(...classes) {
   return classes.filter(Boolean).join(' ');
 }
 
 const Input = () => {
-  // const [conditionStrandName, setConditionStrandName] = useState([])
+  const [loading, setLoading] = useState(false);
+  const [strand, setStrand] = useState('');
+  const [meetsConditions, setMeetsConditions] = useState(false);
+  const [selectedStrandName , setSelectedStrand] = useState('');
+  const [data, setData] = useState([])
   const [conditionData, setConditionsData] = useState({})
   const [strandRank, setStrandRank] = useState([]);
   const [courseOption, setCourseOption] = useState([]);
@@ -29,35 +34,25 @@ const Input = () => {
     esp: '',
   });
 
-  useEffect(() => {
-    const strands = [
-      { name: 'STEM', grade: (parseFloat(grades.math) + parseFloat(grades.science)) / 2 },
-      { name: 'ABM', grade: (parseFloat(grades.math) + parseFloat(grades.tle)) / 2 },
-      { name: 'HUMSS', grade: (parseFloat(grades.science) + parseFloat(grades.arpan)) / 2 },
-    ];
 
-    const sortedStrands = strands.sort((a, b) => b.grade - a.grade);
-    setStrandRank(sortedStrands);
-    
-  }, [grades])
-
-  const strandRanking = async () => {
-    const strandNames = strandRank.map((strand) => strand.name)
-    const strandRankingString = strandNames.join(', ');
-    const studentId = localStorage.getItem('userId')
-
-    await axios.post('http://localhost:3001/rank/add', {
-      studentId: studentId, 
-      strandRanking: strandRankingString  
-    })
-
-    .then((res) => {
-      console.log(res)
-    })
-    .catch((err) => {
+  const strandRanking = useCallback(async () => {
+    try{
+      const strandRankingString = strandRank.join(', ');
+      const studentId = localStorage.getItem('userId')
+      
+      await axios.post('http://localhost:3001/rank/add', {
+        studentId: studentId, 
+        strandRanking: strandRankingString  
+      })
+    } 
+    catch(err) {
       console.log(err)
-    })
-  }
+    }
+  }, [strandRank]);
+
+  useEffect(() => {
+    strandRanking(); 
+  }, [strandRank, strandRanking]);
   
 
   const handleChange = (e) => {
@@ -74,83 +69,54 @@ const Input = () => {
     const average = sum / subjectGrades.length;
     return average;
   }
-  useEffect(() => {
+
   const recommendationConditions = async () => {
   try {
     const response = await axios.get('http://localhost:3001/strand/recommendation-conditions/all');
     const data = response.data;
-    console.log(data)
-
-    const strandSubjects = {}
-
-    for (const strand in data) {
-      const subjects = data[strand];
-      const subjectNames = Object.keys(subjects);
-      strandSubjects[strand] = subjectNames;
-    }
-
-    console.log(strandSubjects)
-
-    const strandAverages = {};
-
-    for (const strand in strandSubjects) {
-      const subjectsForStrand = strandSubjects[strand];
-      const average = calculateStrandAverage(grades, subjectsForStrand);
-      strandAverages[strand] = average;
-    }
-
-    const sortAverages = Object.entries(strandAverages).sort((a, b) => b[1] - a[1]);
-
-    console.log(sortAverages);
-
-
     
-    // const strandAverages = {};
-
-    // for (const strand in data) {
-    //   const subjects = data[strand];
-    //   const average = Object.values(subjects).reduce((total, grade) => total + parseInt(grade), 0) / Object.keys(subjects).length;
-    //   strandAverages[strand] = average;
-    // }
-
-    // console.log(strandAverages)
-    // const sortAverages = Object.entries(strandAverages).sort((a, b) => b[1] - a[1]);
-    // console.log(sortAverages)
-
+    setData(data)
     setConditionsData(data);
   } catch (err) {
     console.log(err);
   }
 };
 
-  recommendationConditions()
-}, [grades, strandRank])
+useEffect(() => {
+  recommendationConditions();
+}, []);
 
-  const handleSubmit = async (e) => {
-  e.preventDefault();
+const getAverageConditions = async (data) => {
+  const strandSubjects = {}
 
-  const studentId = localStorage.getItem('userId')
-
-  try {
-    const response = await fetch(`http://localhost:3001/students/update-recommended/${studentId}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ recommended: recommendedCourse }),
-    });
-
-    if (!response.ok) {
-      throw new Error('Failed to update recommended course');
-    }
-
-    navigate('/recommendation');
-  } catch (error) {
-    console.error('Error updating recommended course:', error);
+  for (const strand in data) {
+    const subjects = data[strand];
+    const subjectNames = Object.keys(subjects);
+    strandSubjects[strand] = subjectNames;
   }
 
-  strandRanking()
-};
+  const strandAverages = {};
+
+  for (const strand in strandSubjects) {
+    const subjectsForStrand = strandSubjects[strand];
+    const average = calculateStrandAverage(grades, subjectsForStrand);
+    strandAverages[strand] = average;
+  }
+
+  const sortAverage = Object.entries(strandAverages).sort((a, b) => b[1] - a[1]);
+  const ranking = sortAverage.map((strand) => strand[0])
+
+  if (meetsConditions) {
+    const modifiedRanking = ranking.filter(strandName => strandName !== strand);
+    modifiedRanking.unshift(strand);
+    setStrandRank(modifiedRanking);
+  } else {
+    setStrandRank(ranking); 
+  }
+  const average = sortAverage[0][0] 
+  setRecommendedCourse(average)
+}
+
 
 const getConditionsForStrand = (strandName) => {
   const conditionsData = conditionData;
@@ -168,6 +134,9 @@ const handleCourseSelectChange = (selectedTitle) => {
 
   const selectedCourse = courseOption.find((course) => course.title === selectedTitle);
   const selectedStrand = selectedCourse.strand;
+
+  setStrand(selectedStrand);
+
   const conditionsData = getConditionsForStrand(selectedStrand);
 
   if (conditionsData) {
@@ -184,11 +153,40 @@ const handleCourseSelectChange = (selectedTitle) => {
 
     if (meetsConditions) {
       setRecommendedCourse(selectedStrand);
+      // getAverageConditions(data)
+      setMeetsConditions(true);
     } else {
-      setRecommendedCourse('DefaultRecommendation');
+      setSelectedStrand(selectedStrand);
+      getAverageConditions(data)
+      setMeetsConditions(false);
     }
   } else {
     setRecommendedCourse(selectedStrand);
+  }
+};
+
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  setLoading(true)
+
+  const studentId = localStorage.getItem('userId')
+
+  try {
+    const response = await axios.put(`http://localhost:3001/students/update-recommended/${studentId}`, {
+      recommended: recommendedCourse,
+      strand: selectedStrandName
+    });
+    console.log(response);
+
+    await strandRanking();
+    await getAverageConditions(data);
+
+    setTimeout(function () {
+      navigate('/recommendation');
+    }, 2000)
+  } catch (error) {
+    setLoading(false)
+    console.error('Error updating recommended course:', error);
   }
 };
 
@@ -215,22 +213,15 @@ const handleCourseSelectChange = (selectedTitle) => {
     !grades.esp ||
     !selectedCourseTitle ;
 
-    // const canSelectCourse = (strandName) => {
-    //   const conditionsData = getConditionsForStrand(strandName);
-      
-    //   // Define a function to check conditions for a given subject and grade
-    //   const checkCondition = (subject, requiredGrade) => {
-    //     return grades[subject] >= requiredGrade;
-    //   };
-    
-    //   // Check the conditions for each subject in the conditions data
-    //   return Object.entries(conditionsData).every(([subject, requiredGrade]) => {
-    //     return checkCondition(subject, parseInt(requiredGrade));
-    //   });
-    // };
 
   return (
-    <div className="flex flex-col justify-center bg-[#99f6e4] dark:bg-[#14b8a6] items-center h-full">
+    <>
+    {loading && 
+      <div>
+       <Loading />
+      </div>
+      }
+    <div className="flex flex-col justify-center bg-[#f0f3f5] dark:bg-[#273242] items-center h-full">
       {hasInteracted && ( // Conditionally render the Aware component as a modal
         <div className="fixed inset-0 flex items-center justify-center z-50">
           <div className="bg-gray-800 bg-opacity-70 absolute inset-0"></div>
@@ -579,6 +570,7 @@ const handleCourseSelectChange = (selectedTitle) => {
         </form>
       </section>
     </div>
+    </>
   );
 };
 

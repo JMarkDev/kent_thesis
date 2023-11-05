@@ -1,11 +1,10 @@
 import React from 'react'
 import NavbarStudent from './NavbarStudent'
-import SidebarStudent from './SidebarStudent'
 
 const LayoutStudent = ({ children }) => {
     return (
         <>
-            <div className='flex flex-auto h-full'>
+            <div className='w-[100vw] flex flex-auto h-full'>
                 <div className='grow'>
                     <NavbarStudent />
                     <div>{children}</div>

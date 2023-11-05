@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import axios from 'axios';
 
 const Recommendation = () => {
+  const [recommendedStrand, setRecommendedStrand] = useState(''); 
   const [strand, setStrand] = useState('');
   const [userId, setUserId] = useState('');
   const [isWhyModalOpen, setIsWhyModalOpen] = useState(false);
@@ -14,15 +15,21 @@ const Recommendation = () => {
     if (storedUserId) {
       setUserId(storedUserId);
     }
+    // const courseStrand = localStorage.getItem('courseStrand');
+    // setRecommendedStrand(courseStrand);
+
   }, []);
+
+  
   
   useEffect(() => {
     if (userId) {
       axios.get(`http://localhost:3001/students/${userId}`)
         .then((res) => {
           const recommendedStrand = res.data[0].recommended;
-          setStrand(recommendedStrand);
-  
+          setRecommendedStrand(recommendedStrand);
+          const strand = res.data[0].strand;
+          setStrand(strand);
           // Fetch strands after setting the strand state
           axios.get('http://localhost:3001/strand/fetch')
             .then((res) => {
@@ -76,8 +83,16 @@ const Recommendation = () => {
     >
       <div className="flex flex-col justify-center items-center w-full h-full bg-black bg-opacity-40">
         <section className="bg-gray-300 dark:bg-gray-500 p-10 ml-10 mr-10 rounded-lg shadow-md flex flex-col items-center">
-          <p className=" text-xl  text-center font-bold">Congratulations! Based on your inputs, your recommended strand {strand}</p>
-
+        {recommendedStrand && strand ? (
+          <h1 className="text-3xl font-extrabold text-center text-blue-800 dark:text-blue-200 mb-6">
+          Based on your grades, your recommended strand is <span className="text-blue-600">{recommendedStrand}</span> {recommendedStrand === strand ? 'and' : 'but'} your chosen course is under the courses of <span className="text-blue-600">{strand}</span> strand.
+        </h1>
+        ) : (
+          <h1 className="text-3xl font-extrabold text-center text-blue-800 dark:text-blue-200 mb-6">
+          Congratulations! Based on your inputs, your recommended strand is <span className="text-blue-600">{recommendedStrand}</span>
+        </h1>
+        )}
+          
           <p className="mb-5 text-center underline cursor-pointer ">
             <span onClick={openWhyModal}>Why?</span>
           </p>

@@ -3,6 +3,7 @@ import axios from 'axios';
 import { useParams, Link } from 'react-router-dom';
 import CarouselComponent from '../Students/stem'
 import { TbArrowBackUp } from 'react-icons/tb';
+import Footer from '../../../components/Footer';
 function SingleStrand() {
   const [courses, setCourses] = useState([]);
   const [strand, setStrand] = useState({});
@@ -37,13 +38,6 @@ function SingleStrand() {
       });
   }, [id]);
   
-  useEffect(() => {
-    // Log strandImages when it gets updated
-    console.log(strandImages);
-  }, [strandImages]);
-  
-  
-  
 
   function filterCoursesByStrand(courses, strandName) {
     return courses.filter((course) => course.strand === strandName);
@@ -52,7 +46,8 @@ function SingleStrand() {
   const filteredCourses = filterCoursesByStrand(courses, strand.name);
 
   return (
-    <div className="p-5 lg:p-10 xl:p-20 bg-gray-100">
+    <>
+    <div className="p-5 lg:p-10 xl:p-20 bg-gray-100 dark:bg-[#27374D]">
       <div className="max-w-screen-xl mx-auto">
      
         <div>
@@ -64,33 +59,31 @@ function SingleStrand() {
           </Link>
           <CarouselComponent images={strandImages}/>
           <div
-            className="text-2xl font-semi text-left"
+            className="text-2xl font-semi text-left py-5 dark:text-white"
             dangerouslySetInnerHTML={{ __html: strand.description }}
           ></div>
 
-          <h1 className="text-2xl font-bold mt-5">
+          <h1 className="text-2xl font-bold mt-5 dark:text-white">
             {strand.name} Strand Courses:
           </h1>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 mt-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-7 mt-5">
             {filteredCourses.map((course) => (
-              <div
-                key={course.id}
-                className="bg-white p-5 lg:p-10 rounded-lg shadow-md"
-              >
-                <img
-                  src={`http://localhost:3001/${course.image}`}
-                  alt="Course Img"
-                  className="mx-auto w-[100%] rounded-lg"
-                />
-                <h2 className="text-lg font-bold mt-3">{course.title}</h2>
-                <p className="text-sm leading-snug mt-2">{course.description}</p>
+              <div key={course.id} className='bg-[#f0f3f5] dark:bg-[#273242] rounded-lg shadow-md dark:shadow-lg'>
+                <div className='m-5 card-body text-gray-700 dark:text-gray-100'>
+                  <img src={`http://localhost:3001/${course.image}`} alt={course.title} className='w-full h-[230px]' />
+                  <h2 className='text-xl font-semibold py-3 dark:text-white'>{course.title}</h2>
+                  <p className='text-base leading-6 mb-4 dark:text-white'>{course.description}</p>
+                </div>
               </div>
-            ))}
+            ))
+          }
           </div>
         </div>
       </div>
     </div>
+    <Footer />
+    </>
   );
 }
 

@@ -60,7 +60,7 @@ function CarouselComponent({ images }) {
   }
 
   return (
-    <div className="mx-auto p-10 bg-white dark-bg-black">
+    <div className="mx-auto p-10 bg-white dark:bg-[#273242]">
       <div
         style={{
           backgroundImage: `url(http://localhost:3001/uploads/${strandImages[currentIndex]})`,

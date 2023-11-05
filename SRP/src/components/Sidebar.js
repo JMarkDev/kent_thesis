@@ -5,7 +5,7 @@ import { AiFillPieChart } from 'react-icons/ai';
 import { SiFuturelearn } from 'react-icons/si';
 import { CgProfile } from 'react-icons/cg';
 import { FaUserShield } from 'react-icons/fa';
-import { IoMdArrowDropright } from 'react-icons/io'; // Import the greater-than icon
+import { IoMdArrowDropright } from 'react-icons/io'; 
 import Logo from '../assets/images/logo.svg';
 import HamburgerButton from './HamburgerMenuButton/HamburgerButton';
 import { BsFillJournalBookmarkFill } from 'react-icons/bs';

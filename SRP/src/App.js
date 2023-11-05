@@ -27,15 +27,11 @@ import AddStrand from './pages/Admin/Strand/AddStrand';
 import EditStrand from './pages/Admin/Strand/EditStrand';
 import SingleStrand from './pages/Students/Students/SingleStrand';
 import CarouselComponent from './pages/Students/Students/stem';
+import Profile from './pages/Students/Students/Profile';
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userRole, setUserRole] = useState(null);
-  const [recommendedStrand, setRecommendedStrand] = useState('');
-
-  const handleRecommendation = (strand) => {
-    setRecommendedStrand(strand);
-  };
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -299,7 +295,7 @@ function App() {
           }
         />
         <Route
-          path="/aboutus"
+          path="/course"
           element={
             <ProtectedRoute
               element={
@@ -335,6 +331,21 @@ function App() {
               element={
                 <LayoutStudent>
                   <CarouselComponent />
+                </LayoutStudent>
+              }
+              allowedRoles={['student']}
+              isLoggedIn={isLoggedIn}
+              userRole={userRole}
+            />
+          }
+        />
+        <Route
+          path="/profile/:id"
+          element={
+            <ProtectedRoute
+              element={
+                <LayoutStudent>
+                  <Profile />
                 </LayoutStudent>
               }
               allowedRoles={['student']}

@@ -1,16 +1,20 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 import Toggle from "./ThemeToggle";
 import HamburgerButton from "./HamburgerMenuButton/HamburgerButton";
 import logo from "../../src/assets/images/logo.png";
-
+import userLogo from "../../src/assets/images/user.png";
+import '.././index.css'
+import { ThemeContext } from "./ThemeContext";
 const Navbar = () => {
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const [name, setName] = useState("");
   const [mobileMenu, setMobileMenu] = useState(false);
+  const {theme} = useContext(ThemeContext)
+  const userId = localStorage.getItem("userId");
 
   const showProfile = () => {
     setOpen(!open);
@@ -18,63 +22,70 @@ const Navbar = () => {
 
   const handleLogout = () => {
     localStorage.removeItem("token");
-    navigate("/");
-  };
-
-  const getName = async () => {
-    const name = localStorage.getItem("userId");
-    try {
-      const res = await axios.get(`http://localhost:3001/students/${name}`);
-      const userName = res.data[0].name;
-      setName(userName);
-    } catch (err) {
-      console.error(err);
-    }
+    navigate("/Log-in");
   };
 
   useEffect(() => {
+    const getName = async () => {
+      try {
+        const res = await axios.get(`http://localhost:3001/students/${userId}`);
+        const fullName = res.data[0].name;
+        const userName = fullName.split(" ")[0];
+        setName(userName);
+      } catch (err) {
+        console.error(err);
+      }
+    };
     getName();
-  }, []);
+  }, [userId]);
 
   return (
-    <header className="w-full h-auto sm:h-20 bg-sky-100 dark:bg-[#075985]">
+    <header className=" w-full h-auto sm:h-20 bg-sky-100 dark:bg-[#203047] dark:shadow-lg">
       <div className="container flex flex-col sm:flex-row justify-between items-center m-auto mx-auto pt-4">
-        <div className="flex justify-center items-center gap-3">
-          <img src={logo} alt="logo" className="w-full h-[30px]" />
-        </div>
+      <div className="flex justify-center items-center gap-3">
+        <img src={logo} alt="logo" className={`w-full h-[30px] ${theme === 'dark' ? 'dark-mode-image' : ''}`} />
+      </div>
         <div className="hidden sm:block">
-          <ul className="flex justify-center items-center gap-5">
+          <ul className="flex justify-center items-center gap-10">
             
+          <li>
+          <Link
+            to="/home"
+            className={`flex items-center text-base font-semibold cursor-pointer text-[#243e63] ${
+              location.pathname.includes("/home")
+                ? "border-b-2 border-[#27374D] dark:border-white dark:text-white"
+                : "border-b-2 border-transparent dark:text-white  dark:hover:text-white dark:hover:border-white dark:hover:border-b-2 hover:border-b-2 hover:border-[#243e63]"
+            }`}
+          >
+    Home
+  </Link>
+        </li>
+          
             <li>
               <Link
-                to="/Home"
-                className={`flex items-center gap-x-2 p-2 sm:p-3 text-base font-semibold rounded-2xl cursor-pointer text-[#243e63] ${
-                  location.pathname.includes("/Home") ? "underline" : " dark:text-white hover:bg-sky-100 dark:hover:bg-gray-200"
-                }`}
-              >
-                Home
-              </Link>
-            </li>
-            <li>
-              <Link
-                to="/Strands"
-                className={`flex items-center gap-x-2 p-2 sm:p-3 text-base font-semibold rounded-2xl cursor-pointer text-[#243e63] ${
-                  location.pathname.includes("/Strands") ? "underline" : " dark:text-white hover:bg-sky-100 dark:hover:bg-gray-200"
-                }`}
+                to="/strands"
+                className={`flex items-center text-base font-semibold cursor-pointer text-[#243e63] hover:bottom-2 border:[#243e63] ${
+                  location.pathname.includes("/strands") 
+                  ? "border-b-2 border-[#27374D] dark:border-white dark:text-white"
+                : "border-b-2 border-transparent dark:text-white  dark:hover:text-white dark:hover:border-white dark:hover:border-b-2 hover:border-b-2 hover:border-[#243e63]"
+            }`}
               >
                 Strands
               </Link>
             </li>
             <li>
               <Link
-                to="/AboutUs"
-                className={`flex items-center gap-x-2 p-2 sm:p-3 text-base font-semibold rounded-2xl text-[#243e63] cursor-pointer ${
-                  location.pathname === "/AboutUs" ? "underline" : " dark:text-white hover-bg-sky-100 dark:hover:bg-gray-200"
-                }`}
+                to="/course"
+                className={`flex items-center text-base font-semibold text-[#243e63] cursor-pointer ${
+                  location.pathname === "/course" 
+                  ? "border-b-2 border-[#27374D] dark:border-white dark:text-white"
+                : "border-b-2 border-transparent dark:text-white  dark:hover:text-white dark:hover:border-white dark:hover:border-b-2 hover:border-b-2 hover:border-[#243e63]"
+            }`}
               >
-                About Us
+                Courses
               </Link>
             </li>
+
           </ul>
         </div>
 
@@ -86,18 +97,33 @@ const Navbar = () => {
             <p className="dark:text-white text-[#243e63] font-medium">{name}</p>
             <div className="gap-10 h-[10px] w-[50px] rounded-full cursor-pointer flex items-center justify-center relative z-40 hover:opacity-50 mr-5">
               <img
-                className="w-7 h-7 rounded-full object-cover"
-                src="https://images.pexels.com/photos/11038549/pexels-photo-11038549.jpeg?auto=compress&cs=tinysrgb&w=1600&lazy=load"
+                className={`w-7 h-7 rounded-full object-cover ${theme === 'dark' ? 'dark-mode-image' : ''}`}
+                src={userLogo}
                 alt=""
               />
             </div>
             {open && (
-              <div className="bg-white border h-[120px] w-[150px] absolute bottom-[-135px] z-20 right-0 pt-[15px] pl-[15px] space-y-[10px]">
-                <p className="cursor-pointer hover:text-blue-500 font-semibold">Profile</p>
-                <p className="cursor-pointer hover:text-blue-500 font-semibold">Settings</p>
-                <p className="cursor-pointer hover:text-blue-500 font-semibold" onClick={handleLogout}>
+              <div className="bg-white dark:bg-[#075985] rounded-sm border h-[120px] w-[150px] absolute bottom-[-135px] z-20 right-0 pt-[15px] space-y-[10px]">
+              <ul className="w-full">
+                <li>
+                  <Link
+                  to={`/profile/${userId}`}
+                  className="block dark:text-white dark:hover:text-[#075985] p-2  font-semibold cursor-pointer hover-bg-sky-100 dark:hover-bg-gray-200
+                  hover:bg-[#aed3ec] border-b-2 border-transparent dark:hover:bg-gray-20 "
+                >
+                  Profile
+                </Link>
+                </li>
+                <li>
+                  <button
+                  onClick={handleLogout}
+                  className="w-full text-left block dark:text-white dark:hover:text-[#075985] p-2 font-semibold cursor-pointer hover-bg-sky-100 dark:hover-bg-gray-200
+                  hover:bg-[#aed3ec] border-b-2 border-transparent dark:hover:bg-gray-20 "
+                > 
                   Log out
-                </p>
+                </button>
+                </li>
+              </ul>  
               </div>
             )}
           </div>
@@ -114,26 +140,44 @@ const Navbar = () => {
             <ul>
               <li>
                 <Link
-                  to="/Home"
-                  className={`block dark:text-white dark:hover:text-[#075985] p-2 text-xl font-semibold rounded-2xl cursor-pointer hover-bg-sky-100 dark:hover:bg-gray-200`}
+                  to="/home"
+                  className={`w-auto block dark:text-white dark:hover:text-[#075985] p-2 text-xl font-semibold cursor-pointer hover-bg-sky-100 dark:hover:bg-gray-200
+                  ${
+                    location.pathname.includes("/home")
+                      ? "bg-[#aed3ec] dark:text-[#243e63]"
+                      : "border-b-2 border-transparent dark:text-white hover:bg-sky-100 dark:hover:bg-gray-200 dark:hover:text-[#243e63] "
+                  }
+                  `}
                 >
                   Home
                 </Link>
               </li>
               <li>
                 <Link
-                  to="/Strands"
-                  className={`block dark:text-white dark:hover:text-[#075985] p-2 text-xl font-semibold rounded-2xl cursor-pointer hover-bg-sky-100 dark:hover-bg-gray-200`}
+                  to="/strands"
+                  className={`block dark:text-white dark:hover:text-[#075985] p-2 text-xl font-semibold cursor-pointer hover-bg-sky-100 dark:hover-bg-gray-200
+                  ${
+                    location.pathname.includes("/strands")
+                      ? "bg-[#aed3ec] dark:text-white"
+                      : "border-b-2 border-transparent dark:text-white hover:bg-sky-100 dark:hover:bg-gray-200 dark:hover:text-[#243e63] "
+                  }
+                  `}
                 >
                   Strands
                 </Link>
               </li>
               <li>
                 <Link
-                  to="/AboutUs"
-                  className={`block dark:text-white dark:hover:text-[#075985] p-2 text-xl font-semibold rounded-2xl cursor-pointer hover-bg-sky-100 dark:hover-bg-gray-200`}
+                  to="/course"
+                  className={`block dark:text-white dark:hover:text-[#075985] p-2 text-xl font-semibold cursor-pointer hover-bg-sky-100 dark:hover-bg-gray-200
+                  ${
+                    location.pathname.includes("/course")
+                      ? "bg-[#aed3ec] dark:text-white"
+                      : "border-b-2 border-transparent dark:text-white hover:bg-sky-100 dark:hover:bg-gray-200 "
+                  }
+                  `}
                 >
-                  About Us
+                  Course
                 </Link>
               </li>
             </ul>

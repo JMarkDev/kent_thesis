@@ -3,12 +3,30 @@ import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
 function Login() {
+  // const [password, setPassword] = useState('');
   const [values, setValues] = useState({
     username: '',
     password: '',
     role: '', 
   });
   const navigate = useNavigate(); 
+
+  // const updatePassword = async (e) => {
+  //   e.preventDefault();
+
+  //   const formData = new FormData();
+
+  //   formData.append('password', password);
+
+  //   try{
+  //     const response = await axios.put(`http://localhost:3001/students/update/password/${id}`, formData);
+  //     alert(response.data.data);
+  //   }
+  //   catch(error){
+  //     console.error('Error updating password', error);
+  //     alert('An error occurred during password update.');
+  //   }
+  // }
 
   const handleLogin = async (event) => {
     event.preventDefault();
