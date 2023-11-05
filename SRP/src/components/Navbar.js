@@ -2,7 +2,7 @@ import React, {useEffect, useState} from "react";
 import Toggle from './ThemeToggle'
 import { useNavigate, useLocation, useParams } from 'react-router-dom'
 import  axios  from "axios";
-
+import userImg from ".././assets/images/user.png";
 
 const Navbar = () => {
   
@@ -76,7 +76,7 @@ const [open, setOpen] = useState(false);
           <p className="dark:text-white text-black font-medium">{name}</p>
           <div className=" gap-10 h-[10px] w-[50px] rounded-full cursor-pointer flex items-center justify-center relative z-40">
             <img className="w-7 h-7 rounded-full object-cover hover:opacity-50"
-              src="https://images.pexels.com/photos/11038549/pexels-photo-11038549.jpeg?auto=compress&cs=tinysrgb&w=1600&lazy=load"
+              src={userImg}
               alt=""
             />
           </div>

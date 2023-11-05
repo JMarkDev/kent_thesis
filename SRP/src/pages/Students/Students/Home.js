@@ -114,7 +114,7 @@ const Home = () => {
         Browse All Courses 
         </Link>
       </div>
-        <div className='bg-[#f0f3f5] dark:bg-[#27374D] dark:text-white '>
+        <div className='bg-[#f0f3f5]  dark:bg-[#27374D] dark:text-white '>
           <div className='p-10 lg:mx-20 mb-20'>
           <div className='p-5 text-center'>
           <span className='font-bold text-[#6415ff] dark:text-white'>FAQS</span> 

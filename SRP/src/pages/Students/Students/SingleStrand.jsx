@@ -59,7 +59,7 @@ function SingleStrand() {
           </Link>
           <CarouselComponent images={strandImages}/>
           <div
-            className="text-2xl font-semi text-left py-5 dark:text-white"
+            className="text-lg lg:text-2xl font-semi text-left py-5 dark:text-white"
             dangerouslySetInnerHTML={{ __html: strand.description }}
           ></div>
 

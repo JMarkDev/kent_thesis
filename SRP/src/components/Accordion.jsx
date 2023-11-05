@@ -28,7 +28,7 @@ export function AccordionCustomIcon() {
   return (
     <>
       <Accordion open={open === 1} icon={<Icon id={1} open={open} />}>
-        <AccordionHeader onClick={() => handleOpen(1)}>What are senior high school strands?</AccordionHeader>
+        <AccordionHeader onClick={() => handleOpen(1)} className="text-lg lg:text-2xl ">What are senior high school strands?</AccordionHeader>
         <AccordionBody className='text-base dark:text-white'>
         Senior high school strands are specialized academic tracks or fields of study designed to help
          students focus on specific areas of interest. 
@@ -37,7 +37,7 @@ export function AccordionCustomIcon() {
         </AccordionBody>
       </Accordion>
       <Accordion open={open === 2} icon={<Icon id={2} open={open} />}>
-        <AccordionHeader onClick={() => handleOpen(2)}>
+        <AccordionHeader onClick={() => handleOpen(2)} className="text-lg lg:text-2xl ">
         Can I pursue college programs unrelated to my senior high school strand?
         </AccordionHeader>
         <AccordionBody className='text-base dark:text-white'>
@@ -47,7 +47,7 @@ export function AccordionCustomIcon() {
         </AccordionBody>
       </Accordion>
       <Accordion open={open === 4} icon={<Icon id={4} open={open} />}>
-        <AccordionHeader onClick={() => handleOpen(4)}>
+        <AccordionHeader onClick={() => handleOpen(4)} className="text-lg lg:text-2xl ">
         How does the specialization in a particular strand benefit future college or career options?
         </AccordionHeader>
         <AccordionBody className='text-base dark:text-white'>
@@ -57,7 +57,7 @@ export function AccordionCustomIcon() {
         </AccordionBody>
       </Accordion>
       <Accordion open={open === 5} icon={<Icon id={5} open={open} />}>
-        <AccordionHeader onClick={() => handleOpen(5)}>
+        <AccordionHeader onClick={() => handleOpen(5)} className="text-lg lg:text-2xl ">
         What subjects are covered in the STEM (Science, Technology, Engineering, and Mathematics) strand?
         </AccordionHeader>
         <AccordionBody className='text-base dark:text-white'>
@@ -66,7 +66,7 @@ export function AccordionCustomIcon() {
         </AccordionBody>
       </Accordion>
       <Accordion open={open === 6} icon={<Icon id={6} open={open} />}>
-        <AccordionHeader onClick={() => handleOpen(6)}>
+        <AccordionHeader onClick={() => handleOpen(6)} className="text-lg lg:text-2xl ">
         What are the key differences between the ABM (Accountancy, Business, and Management) and HUMSS (Humanities and Social Sciences) strands?
         </AccordionHeader>
         <AccordionBody className='text-base dark:text-white'>
@@ -75,7 +75,7 @@ export function AccordionCustomIcon() {
         </AccordionBody>
       </Accordion>
       <Accordion open={open === 7} icon={<Icon id={7} open={open} />}>
-        <AccordionHeader onClick={() => handleOpen(7)}>
+        <AccordionHeader onClick={() => handleOpen(7)} className="text-lg lg:text-2xl ">
         How do I know which strand aligns best with my interests and career goals?
         </AccordionHeader>
         <AccordionBody className='text-base dark:text-white'>
@@ -84,7 +84,7 @@ export function AccordionCustomIcon() {
         </AccordionBody>
       </Accordion>
       <Accordion open={open === 8} icon={<Icon id={8} open={open} />}>
-      <AccordionHeader onClick={() => handleOpen(8)}>
+      <AccordionHeader onClick={() => handleOpen(8)} className="text-lg lg:text-2xl ">
       Can I pursue a specific career with any senior high school strand?
       </AccordionHeader>
       <AccordionBody className='text-base dark:text-white'>

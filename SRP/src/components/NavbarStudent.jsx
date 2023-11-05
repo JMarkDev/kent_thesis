@@ -5,6 +5,7 @@ import Toggle from "./ThemeToggle";
 import HamburgerButton from "./HamburgerMenuButton/HamburgerButton";
 import logo from "../../src/assets/images/logo.png";
 import userLogo from "../../src/assets/images/user.png";
+import sm_logo from "../../src/assets/images/strand_recom_logo.png";
 import '.././index.css'
 import { ThemeContext } from "./ThemeContext";
 const Navbar = () => {
@@ -25,6 +26,14 @@ const Navbar = () => {
     navigate("/Log-in");
   };
 
+  const closeMobileMenu = () => {
+    setMobileMenu(false);
+  };
+
+  const handleMobileLinkClick = () => {
+    closeMobileMenu(); // Close the mobile menu when a link is clicked
+  };
+
   useEffect(() => {
     const getName = async () => {
       try {
@@ -40,10 +49,10 @@ const Navbar = () => {
   }, [userId]);
 
   return (
-    <header className=" w-full h-auto sm:h-20 bg-sky-100 dark:bg-[#203047] dark:shadow-lg">
-      <div className="container flex flex-col sm:flex-row justify-between items-center m-auto mx-auto pt-4">
-      <div className="flex justify-center items-center gap-3">
-        <img src={logo} alt="logo" className={`w-full h-[30px] ${theme === 'dark' ? 'dark-mode-image' : ''}`} />
+    <header className=" w-full py-5 bg-sky-100 dark:bg-[#203047] dark:shadow-lg">
+      <div className="container flex  flex-col sm:flex-row justify-between items-end sm:items-center md:items-center lg:items-center m-auto mx-auto">
+      <div className=" lg:flex justify-center items-center gap-3">
+        <img src={logo} alt="logo" className={`hidden sm:block md:block lg:block w-full h-[30px] ${theme === 'dark' ? 'dark-mode-image' : ''}`} />
       </div>
         <div className="hidden sm:block">
           <ul className="flex justify-center items-center gap-10">
@@ -57,8 +66,8 @@ const Navbar = () => {
                 : "border-b-2 border-transparent dark:text-white  dark:hover:text-white dark:hover:border-white dark:hover:border-b-2 hover:border-b-2 hover:border-[#243e63]"
             }`}
           >
-    Home
-  </Link>
+          Home
+        </Link>
         </li>
           
             <li>
@@ -94,7 +103,7 @@ const Navbar = () => {
             <Toggle />
           </div>
           <div className="flex items-center gap-[15px] relative" onClick={showProfile}>
-            <p className="dark:text-white text-[#243e63] font-medium">{name}</p>
+            <p className=" dark:text-white text-[#243e63] font-medium">{name}</p>
             <div className="gap-10 h-[10px] w-[50px] rounded-full cursor-pointer flex items-center justify-center relative z-40 hover:opacity-50 mr-5">
               <img
                 className={`w-7 h-7 rounded-full object-cover ${theme === 'dark' ? 'dark-mode-image' : ''}`}
@@ -129,8 +138,9 @@ const Navbar = () => {
           </div>
         </div>
       </div>
-      <div className="absolute top-0">
+      <div className="absolute top-2">
         <HamburgerButton setMobileMenu={setMobileMenu} mobileMenu={mobileMenu} />
+        <img src={sm_logo} alt="logo" className={`block mt-4 ml-20 sm:hidden md:hidden lg:hidden h-[30px] ${theme === 'dark' ? 'dark-mode-image' : ''}`} />
       </div>
       <div className="sm:hidden">
         <div className="ml-6">
@@ -140,6 +150,7 @@ const Navbar = () => {
             <ul>
               <li>
                 <Link
+                  onClick={handleMobileLinkClick}
                   to="/home"
                   className={`w-auto block dark:text-white dark:hover:text-[#075985] p-2 text-xl font-semibold cursor-pointer hover-bg-sky-100 dark:hover:bg-gray-200
                   ${
@@ -154,6 +165,7 @@ const Navbar = () => {
               </li>
               <li>
                 <Link
+                  onClick={handleMobileLinkClick}
                   to="/strands"
                   className={`block dark:text-white dark:hover:text-[#075985] p-2 text-xl font-semibold cursor-pointer hover-bg-sky-100 dark:hover-bg-gray-200
                   ${
@@ -168,6 +180,7 @@ const Navbar = () => {
               </li>
               <li>
                 <Link
+                  onClick={handleMobileLinkClick}
                   to="/course"
                   className={`block dark:text-white dark:hover:text-[#075985] p-2 text-xl font-semibold cursor-pointer hover-bg-sky-100 dark:hover-bg-gray-200
                   ${

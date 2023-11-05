@@ -75,14 +75,14 @@ function Profile() {
                         <input type='text'
                         disabled 
                         value={name} 
-                        className='mt-1 p-2 block w-full border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm'
+                        className='dark:text-white mt-1 p-2 block w-full border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm'
                         />
                         </div>
                         <div className='mt-0 mx-3 mb-5'>
                         <label className='block text-sm font-medium text-gray-700 dark:text-white'>Email*</label>
                         <input type='text' 
                             value={username}  
-                            className='mt-1 p-2 block w-full border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm '
+                            className='dark:text-white mt-1 p-2 block w-full border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm '
                             disabled
                         /> 
                         </div>
@@ -129,7 +129,7 @@ function Profile() {
 
                     {/* Modal for editing profile */}
                     {isEditing && (
-                        <div className='fixed top-0 left-0 z-50 w-full h-full flex items-center justify-center bg-gray-800 bg-opacity-50'>
+                        <div className='px-5 fixed top-0 left-0 z-50 w-full h-full flex items-center justify-center bg-gray-800 bg-opacity-50'>
                             <div className='w-[550px]  bg-white dark:bg-[#273242] rounded-lg p-8'>
                             <form onSubmit={handleUpdate} method="PUT" encType="multipart/form-data">
                             <div className='mt-0 mx-3 mb-5'>
