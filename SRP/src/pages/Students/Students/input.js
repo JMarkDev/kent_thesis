@@ -5,12 +5,15 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import '../../../index.css';
 import Loading from '../../../components/loading/loading'
+// import { use } from '../../../../../server/src/Routes/Students';
 function classNames(...classes) {
   return classes.filter(Boolean).join(' ');
 }
 
 const Input = () => {
   const [loading, setLoading] = useState(false);
+  const [qualification, setQualification] = useState([])
+  const [reasonData, setReasonData] = useState({})
   const [strand, setStrand] = useState('');
   const [meetsConditions, setMeetsConditions] = useState(false);
   const [selectedStrandName , setSelectedStrand] = useState('');
@@ -37,18 +40,18 @@ const Input = () => {
 
   const strandRanking = useCallback(async () => {
     try{
-      const strandRankingString = strandRank.join(', ');
+      const reasonDataString = JSON.stringify(reasonData);
       const studentId = localStorage.getItem('userId')
       
       await axios.post('http://localhost:3001/rank/add', {
         studentId: studentId, 
-        strandRanking: strandRankingString  
+        strandRanking: reasonDataString  
       })
     } 
     catch(err) {
       console.log(err)
     }
-  }, [strandRank]);
+  }, [reasonData]);
 
   useEffect(() => {
     strandRanking(); 
@@ -80,6 +83,26 @@ const Input = () => {
   } catch (err) {
     console.log(err);
   }
+};
+
+const strandQualification = (grades, conditionData) => {
+  const qualificationResults = {};
+
+  for (const selectedStrand in conditionData) {
+    const conditions = conditionData[selectedStrand];
+    let isQualified = true;
+
+    for (const subject in conditions) {
+      if (grades[subject] && parseInt(grades[subject]) < parseInt(conditions[subject])) {
+        isQualified = false;
+        break; // If any condition is not met, break the loop and mark the strand as not qualified
+      }
+    }  
+
+    qualificationResults[selectedStrand] = isQualified ? 'Qualified' : 'Not Qualified';
+  }
+
+  return qualificationResults;
 };
 
 useEffect(() => {
@@ -117,6 +140,39 @@ const getAverageConditions = async (data) => {
   setRecommendedCourse(average)
 }
 
+let strandName = strand
+
+function getRecommendation(qualification, strand, strandName) {
+  const recommendations = {};
+
+  strand.forEach((strandItem, index) => {
+    if (qualification[strandItem] === 'Qualified' && index === 0) {
+      recommendations[strandItem] = `Your recommended strand is ${strandItem}.`;
+    } 
+    else if (qualification[strandItem] === 'Not Qualified' && index === 0 && strandItem !== strandName) {
+      recommendations[strandItem] = `Your grades are excellent but your desired course match to this ${strandItem} strand`;
+    } 
+    else if (qualification[strandItem] === 'Not Qualified' && index === 0) {
+      recommendations[strandItem] = 'Your grades are excellent but your desired course did not match to this strand';
+    } 
+    else if (qualification[strandItem] === 'Qualified' && index >= 1) {
+      recommendations[strandItem] = `Your grades are good, but the course you desired is not related to this ${strandItem} strand.`;
+    } 
+    else if (qualification[strandItem] === 'Not Qualified' && strandItem === strandName) {
+      recommendations[strandItem] = `Your grades did not meet the conditions, but your chosen course is related to ${strandItem}.`;
+    } 
+    else if (qualification[strandItem] === 'Not Qualified' && index >= 1) {
+      recommendations[strandItem] = `Your grades did not meet the conditions, and your chosen course is not related to ${strandItem}.`;
+    }
+  });
+
+  return recommendations;
+}
+
+useEffect(() => {
+  const strandRecommendations = getRecommendation(qualification, strandRank, strandName);
+  setReasonData(strandRecommendations)
+}, [qualification, strandRank, strandName]);
 
 const getConditionsForStrand = (strandName) => {
   const conditionsData = conditionData;
@@ -178,10 +234,14 @@ const handleSubmit = async (e) => {
     });
     console.log(response);
 
+
+    const qualificationResults = strandQualification(grades, conditionData);
+    setQualification(qualificationResults)
+    
     await strandRanking();
     await getAverageConditions(data);
 
-    setTimeout(function () {
+    setTimeout(function () {  
       navigate('/recommendation');
     }, 2000)
   } catch (error) {

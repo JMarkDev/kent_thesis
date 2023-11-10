@@ -50,17 +50,20 @@ const Recommendation = () => {
 
   useEffect(() => {
     const userId = localStorage.getItem('userId');
-
+  
     axios.get(`http://localhost:3001/rank/${userId}`)
-    .then((res) => {
-      const ranking = res.data[0].strandRanking;
-      const strandNames = ranking.split(', ')
-      setStrandName(strandNames)
-    })
-    .catch((err) => {
-      console.log(err);
-    })
-  }, [])
+      .then((res) => {
+        const ranking = res.data[0].strandRanking;
+        const strandEntries = Object.entries(JSON.parse(ranking));
+        const strandNames = strandEntries.map(([strand, reason]) => `${strand}: "${reason}"`);
+        console.log(strandNames)
+        setStrandName(strandNames);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  }, []);
+  
   
 
 
