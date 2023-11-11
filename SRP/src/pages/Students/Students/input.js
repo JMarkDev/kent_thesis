@@ -146,28 +146,37 @@ function getRecommendation(qualification, strand, strandName) {
   const recommendations = {};
 
   strand.forEach((strandItem, index) => {
-    if (qualification[strandItem] === 'Qualified' && index === 0) {
-      recommendations[strandItem] = `Your recommended strand is ${strandItem}.`;
-    } 
-    else if (qualification[strandItem] === 'Not Qualified' && index === 0 && strandItem !== strandName) {
-      recommendations[strandItem] = `Your grades are excellent but your desired course match to this ${strandItem} strand`;
-    } 
-    else if (qualification[strandItem] === 'Not Qualified' && index === 0) {
-      recommendations[strandItem] = 'Your grades are excellent but your desired course did not match to this strand';
-    } 
-    else if (qualification[strandItem] === 'Qualified' && index >= 1) {
-      recommendations[strandItem] = `Your grades are good, but the course you desired is not related to this ${strandItem} strand.`;
-    } 
-    else if (qualification[strandItem] === 'Not Qualified' && strandItem === strandName) {
-      recommendations[strandItem] = `Your grades did not meet the conditions, but your chosen course is related to ${strandItem}.`;
-    } 
-    else if (qualification[strandItem] === 'Not Qualified' && index >= 1) {
-      recommendations[strandItem] = `Your grades did not meet the conditions, and your chosen course is not related to ${strandItem}.`;
+    switch (true) {
+      case qualification[strandItem] === 'Qualified' && index === 0:
+        recommendations[strandItem] = `Your recommended strand is ${strandItem}.`;
+        break;
+      case qualification[strandItem] === 'Not Qualified' && index === 0 && strandItem === strandName:
+        recommendations[strandItem] = `Your grades are excellent, and your desired course matches with this ${strandItem} strand.`;
+        break;
+      case qualification[strandItem] === 'Not Qualified' && index === 0:
+        recommendations[strandItem] = 'Your grades are excellent, but your desired course does not match with this strand.';
+        break;
+      case qualification[strandItem] === 'Not Qualified' && index === 0 && strandItem !== strandName:
+      recommendations[strandItem] = 'Your grades are excellent, but your desired did not course match with this strand.';
+        break;
+      case qualification[strandItem] === 'Qualified' && index >= 1:
+        recommendations[strandItem] = `Your grades are good, but the course you desired is not related to this ${strandItem} strand.`;
+        break;
+      case qualification[strandItem] === 'Not Qualified' && strandItem === strandName:
+        recommendations[strandItem] = `Your grades did not meet the conditions, but your chosen course is related to ${strandItem}.`;
+        break;
+      case qualification[strandItem] === 'Not Qualified' && index >= 1:
+        recommendations[strandItem] = `Your grades did not meet the conditions, and your chosen course is not related to ${strandItem}.`;
+        break;
+      default:
+        // Handle any other cases if needed
+        break;
     }
   });
 
   return recommendations;
 }
+
 
 useEffect(() => {
   const strandRecommendations = getRecommendation(qualification, strandRank, strandName);

@@ -8,7 +8,7 @@ const Recommendation = () => {
   const [userId, setUserId] = useState('');
   const [isWhyModalOpen, setIsWhyModalOpen] = useState(false);
   const [strandId, setStrandId] = useState('');
-  const [strandName, setStrandName] = useState([]);
+  const [strandData, setStrandData] = useState([]);
 
   useEffect(() => {
     const storedUserId = localStorage.getItem('userId');
@@ -55,14 +55,14 @@ const Recommendation = () => {
       .then((res) => {
         const ranking = res.data[0].strandRanking;
         const strandEntries = Object.entries(JSON.parse(ranking));
-        const strandNames = strandEntries.map(([strand, reason]) => `${strand}: "${reason}"`);
-        console.log(strandNames)
-        setStrandName(strandNames);
+        const strandData = strandEntries.map(([strand, reason]) => ({ strand, reason }));
+        setStrandData(strandData);
       })
       .catch((err) => {
         console.log(err);
       });
   }, []);
+  
   
   
 
@@ -117,15 +117,14 @@ const Recommendation = () => {
         <div className="bg-blue-300 dark:bg-blue-400 p-4 md:p-10 lg:p-20 rounded-lg shadow-md w-full max-w-2xl mt-10 relative">
         <h2 className="text-3xl font-extrabold text-center text-blue-800 dark:text-blue-200 mb-6">Strand Ranking Based on Your Input Grades:</h2>
         <ul className="list-none text-xl mb-4 text-gray-700 dark:text-gray-300">
-          {
-            strandName.map((strand, index) => (
-              <li key={index} className="mb-4 flex items-center">
-                <span className="text-2xl text-blue-600 dark:text-blue-300 mr-2">{index + 1}.</span>
-                <span className="text-xl">{strand}</span>
-              </li>
-            ))
-          }
-        </ul>
+        {strandData.map((data, index) => (
+          <li key={index} className="mb-4 flex items-center">
+            <span className="text-2xl text-blue-600 dark:text-blue-300 mr-2">{index + 1}.</span>
+            <span className="text-xl">{`${data.strand}: "${data.reason}"`}</span>
+          </li>
+        ))}
+      </ul>
+      
                   
           <button
             onClick={closeWhyModal} // Close the modal
