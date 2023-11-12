@@ -28,6 +28,7 @@ import EditStrand from './pages/Admin/Strand/EditStrand';
 import SingleStrand from './pages/Students/Students/SingleStrand';
 import CarouselComponent from './pages/Students/Students/stem';
 import Profile from './pages/Students/Students/Profile';
+import Grades from './pages/Admin/Grades';
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -170,6 +171,22 @@ function App() {
             />
           }
         />
+
+        <Route
+        path="/grades/:id"
+        element={
+          <ProtectedRoute
+            element={
+              <Layout>
+                <Grades />
+              </Layout>
+            }
+            allowedRoles={['admin']}
+            isLoggedIn={isLoggedIn}
+            userRole={userRole}
+          />
+        }
+      />
 
         <Route
           path="/login"

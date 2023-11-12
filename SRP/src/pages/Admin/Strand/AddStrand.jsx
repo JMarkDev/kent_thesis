@@ -23,6 +23,7 @@ function AddStrand() {
     'filipino',
     'ict',
     'esp',
+    'average'
   ];
 
   const handleInputChange = (e) => {

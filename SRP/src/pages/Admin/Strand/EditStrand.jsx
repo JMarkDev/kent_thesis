@@ -28,6 +28,7 @@ function EditStrand() {
     'filipino',
     'ict',
     'esp',
+    'average'
   ];
 
   useEffect(() => {

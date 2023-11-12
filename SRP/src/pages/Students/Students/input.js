@@ -11,6 +11,7 @@ function classNames(...classes) {
 }
 
 const Input = () => {
+  const [average, setAverage] = useState(0);
   const [loading, setLoading] = useState(false);
   const [qualification, setQualification] = useState([])
   const [reasonData, setReasonData] = useState({})
@@ -37,6 +38,16 @@ const Input = () => {
     esp: '',
   });
 
+  useEffect(() => {
+    const getAverage = (grades) => {
+      const subjectGrades = Object.values(grades).map((grade) => parseFloat(grade) || 0);
+      const sum = subjectGrades.reduce((acc, grade) => acc + grade, 0);
+      const average = sum / subjectGrades.length;
+      setAverage(average);
+    }
+
+    getAverage(grades)
+  }, [grades])
 
   const strandRanking = useCallback(async () => {
     try{
@@ -232,34 +243,50 @@ const handleCourseSelectChange = (selectedTitle) => {
 
 const handleSubmit = async (e) => {
   e.preventDefault();
-  setLoading(true)
+  setLoading(true);
 
-  const studentId = localStorage.getItem('userId')
+  const studentId = localStorage.getItem('userId');
+
+  const formDataObject = {
+    studentId: studentId,
+    math: grades.math,
+    science: grades.science,
+    english: grades.english,
+    mapeh: grades.mapeh,
+    tle: grades.tle,
+    arpan: grades.arpan,
+    filipino: grades.filipino,
+    ict: grades.ict,
+    esp: grades.esp,
+    average: average,
+    course: selectedCourseTitle,
+  };
 
   try {
     const response = await axios.put(`http://localhost:3001/students/update-recommended/${studentId}`, {
       recommended: recommendedCourse,
-      strand: selectedStrandName
+      strand: selectedStrandName,
     });
     console.log(response);
 
+    const responseGrades = await axios.post('http://localhost:3001/grades/add', formDataObject);
+    console.log(responseGrades);
 
     const qualificationResults = strandQualification(grades, conditionData);
-    setQualification(qualificationResults)
-    
+    setQualification(qualificationResults);
+
     await strandRanking();
     await getAverageConditions(data);
 
-    setTimeout(function () {  
+    setTimeout(function () {
       navigate('/recommendation');
-    }, 2000)
+    }, 2000);
   } catch (error) {
-    setLoading(false)
+    setLoading(false);
     console.error('Error updating recommended course:', error);
   }
 };
 
-    
     useEffect(() => {
       axios.get('http://localhost:3001/course/fetch')
       .then((res) => {
