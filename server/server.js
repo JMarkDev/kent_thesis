@@ -28,7 +28,7 @@ app.use('/course', courseRoute);
 app.use('/strand', strandRoute);
 app.use('/recommended', recommendedRoute);
 app.use('/rank', rankingRoute);
-app.use('/grade', gradesRoute);
+app.use('/grades', gradesRoute);
 app.use('/filter', filteredRecommendedRoute);
 
 app.use(cookieParser());
