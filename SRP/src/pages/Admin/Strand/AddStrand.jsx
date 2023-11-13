@@ -179,6 +179,36 @@ function AddStrand() {
               <label htmlFor={subject} className="block text-gray-700 font-bold">
                 {subject.charAt(0).toUpperCase() + subject.slice(1)} Grade:
               </label>
+            { subject === 'average' ? (
+              <>
+              <div>
+                <label htmlFor={`${subject}_min`} className="block text-gray-700 font-bold">
+                  Minimum {subject.charAt(0).toUpperCase() + subject.slice(1)} Grade:
+                </label>
+                <input
+                  type="number"
+                  id={`${subject}_min`}
+                  name={`${subject}_min`}
+                  value={formData.recommendationConditions[`${subject}_min`] || ''}
+                  onChange={(e) => handleRecommendationChange(`${subject}_min`, e.target.value)}
+                  className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring focus:ring-indigo-200"
+                />
+              </div>
+              <div>
+                <label htmlFor={`${subject}_max`} className="block text-gray-700 font-bold">
+                  Maximum {subject.charAt(0).toUpperCase() + subject.slice(1)} Grade:
+                </label>
+                <input
+                  type="number"
+                  id={`${subject}_max`}
+                  name={`${subject}_max`}
+                  value={formData.recommendationConditions[`${subject}_max`] || ''}
+                  onChange={(e) => handleRecommendationChange(`${subject}_max`, e.target.value)}
+                  className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring focus:ring-indigo-200"
+                />
+              </div>
+            </>
+            ) : (
               <input
                 type="number"
                 id={subject}
@@ -187,6 +217,8 @@ function AddStrand() {
                 onChange={(e) => handleRecommendationChange(subject, e.target.value)}
                 className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring focus:ring-indigo-200"
               />
+            )}
+              
             </div>
           ))}
 
