@@ -13,7 +13,7 @@ import PageNotFound from './pages/PageNotFound';
 import Home from './pages/Students/Students/Home';
 import ProtectedRoute from './pages/ProtectedRoute';
 import Admin from './pages/Admin/admin';
-import AboutUs from './pages/Students/Students/AboutUs';
+import Student_Course from './pages/Students/Students/Course';
 import Strands from './pages/Students/Students/Strands';
 import Input from './pages/Students/Students/input';
 import Recommendation from './pages/Students/Students/recommendation';
@@ -26,7 +26,7 @@ import Strand from './pages/Admin/Strand';
 import AddStrand from './pages/Admin/Strand/AddStrand';
 import EditStrand from './pages/Admin/Strand/EditStrand';
 import SingleStrand from './pages/Students/Students/SingleStrand';
-import CarouselComponent from './pages/Students/Students/stem';
+import CarouselComponent from './pages/Students/Students/CarouselComponent';
 import Profile from './pages/Students/Students/Profile';
 import Grades from './pages/Admin/Grades';
 
@@ -317,7 +317,7 @@ function App() {
             <ProtectedRoute
               element={
                 <LayoutStudent>
-                  <AboutUs />
+                  <Student_Course />
                 </LayoutStudent>
               }
               allowedRoles={['student']}

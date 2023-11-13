@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useParams, Link } from 'react-router-dom';
-import CarouselComponent from '../Students/stem'
+import CarouselComponent from './CarouselComponent'
 import { TbArrowBackUp } from 'react-icons/tb';
 import Footer from '../../../components/Footer';
 function SingleStrand() {
@@ -51,9 +51,6 @@ function SingleStrand() {
       <div className="max-w-screen-xl mx-auto">
      
         <div>
-        
-        
-  
           <Link to='/Strands' className="flex justify-center items-center bg-gray-500 hover:bg-gray-700 text-white px-6 py-2 rounded-md absolute top-20 mt-8">
             <TbArrowBackUp className='mr-2'/>Back
           </Link>

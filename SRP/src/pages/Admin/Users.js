@@ -75,7 +75,6 @@
       handleFilterCards();
   }, [])
 
-
     const handleFilter = async (strand) => {
       if(strand === 'Default'){
         const response = await axios.get('http://localhost:3001/filter/fetch/all');
@@ -258,7 +257,7 @@
                         </button>
                     
                         <Link
-                          to={`/grades/:${id}`}
+                          to={`/grades/${id}`}
                           className="p-2 text-blue-600 hover:text-blue-800 focus:outline-none"
                         >
                           View
