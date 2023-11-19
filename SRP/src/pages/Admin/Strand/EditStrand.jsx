@@ -23,10 +23,8 @@ function EditStrand() {
     'science',
     'english',
     'mapeh',
-    'tle',
     'arpan',
     'filipino',
-    'ict',
     'esp',
     'average'
   ];

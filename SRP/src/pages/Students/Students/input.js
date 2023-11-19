@@ -11,6 +11,8 @@ function classNames(...classes) {
 }
 
 const Input = () => {
+  const [strandData, setStrandData] = useState([]);
+  const [ranking, setRanking] = useState([]);
   const [average, setAverage] = useState(0);
   const [loading, setLoading] = useState(false);
   const [qualification, setQualification] = useState([])
@@ -19,7 +21,7 @@ const Input = () => {
   const [meetsConditions, setMeetsConditions] = useState(false);
   const [selectedStrandName , setSelectedStrand] = useState('');
   const [data, setData] = useState([])
-  const [conditionData, setConditionsData] = useState({})
+  const [conditionData, setConditionsData] = useState([])
   const [strandRank, setStrandRank] = useState([]);
   const [courseOption, setCourseOption] = useState([]);
   const [selectedCourseTitle, setSelectedCourseTitle] = useState('');
@@ -31,10 +33,8 @@ const Input = () => {
     science: '',
     english: '',
     mapeh: '',
-    tle: '',
     arpan: '',
     filipino: '',
-    ict: '',
     esp: '',
   });
 
@@ -51,22 +51,46 @@ const Input = () => {
 
   const strandRanking = useCallback(async () => {
     try{
-      const reasonDataString = JSON.stringify(reasonData);
+      console.log(strandData)
+      const reasonDataString = JSON.stringify(strandData);
+      console.log(reasonDataString)
       const studentId = localStorage.getItem('userId')
       
-      await axios.post('http://localhost:3001/rank/add', {
+      const response = await axios.post('http://localhost:3001/rank/add', {
         studentId: studentId, 
         strandRanking: reasonDataString  
       })
+      console.log(response.data)
     } 
     catch(err) {
       console.log(err)
     }
-  }, [reasonData]);
+  }, [strandData]);
 
   useEffect(() => {
     strandRanking(); 
   }, [strandRank, strandRanking]);
+
+  const topStrand = useCallback(async () => {
+    if (strandData && strandData.length > 0 && strandData[0] && strandData[0].strand !== undefined) {
+      const topStrand = strandData[0].strand;
+      console.log(topStrand);
+  
+      try {
+        const studentId = localStorage.getItem('userId');
+        const response = await axios.put(`http://localhost:3001/students/update-recommended/${studentId}`, {
+          recommended: topStrand,
+        });
+        console.log(response.data);
+      } catch (err) {
+        console.log(err);
+      }
+    }
+  }, [strandData]);
+  
+  useEffect(() => {
+    topStrand();
+  }, [strandData, topStrand]);
   
 
   const handleChange = (e) => {
@@ -77,18 +101,18 @@ const Input = () => {
     });
   };
 
-  function calculateStrandAverage(grades, subjectsForStrand) {
-    const subjectGrades = subjectsForStrand.map(subject => parseFloat(grades[subject]) || 0);
-    const sum = subjectGrades.reduce((acc, grade) => acc + grade, 0);
-    const average = sum / subjectGrades.length;
-    return average;
-  }
+  // function calculateStrandAverage(grades, subjectsForStrand) {
+  //   const subjectGrades = subjectsForStrand.map(subject => parseFloat(grades[subject]) || 0);
+  //   const sum = subjectGrades.reduce((acc, grade) => acc + grade, 0);
+  //   const average = sum / subjectGrades.length;
+  //   return average;
+  // }
 
   const recommendationConditions = async () => {
   try {
     const response = await axios.get('http://localhost:3001/strand/recommendation-conditions/all');
     const data = response.data;
-    
+
     setData(data)
     setConditionsData(data);
   } catch (err) {
@@ -96,103 +120,103 @@ const Input = () => {
   }
 };
 
-const strandQualification = (grades, conditionData) => {
-  const qualificationResults = {};
+// const strandQualification = (grades, conditionData) => {
+//   const qualificationResults = {};
 
-  for (const selectedStrand in conditionData) {
-    const conditions = conditionData[selectedStrand];
-    let isQualified = true;
+//   for (const selectedStrand in conditionData) {
+//     const conditions = conditionData[selectedStrand];
+//     let isQualified = true;
 
-    for (const subject in conditions) {
-      if (grades[subject] && parseInt(grades[subject]) < parseInt(conditions[subject])) {
-        isQualified = false;
-        break; // If any condition is not met, break the loop and mark the strand as not qualified
-      }
-    }  
+//     for (const subject in conditions) {
+//       if (grades[subject] && parseInt(grades[subject]) < parseInt(conditions[subject])) {
+//         isQualified = false;
+//         break; // If any condition is not met, break the loop and mark the strand as not qualified
+//       }
+//     }  
 
-    qualificationResults[selectedStrand] = isQualified ? 'Qualified' : 'Not Qualified';
-  }
+//     qualificationResults[selectedStrand] = isQualified ? 'Qualified' : 'Not Qualified';
+//   }
 
-  return qualificationResults;
-};
+//   return qualificationResults;
+// };
 
 useEffect(() => {
   recommendationConditions();
 }, []);
 
-const getAverageConditions = async (data) => {
-  const strandSubjects = {}
+// const getAverageConditions = async (data) => {
+//   const strandSubjects = {}
 
-  for (const strand in data) {
-    const subjects = data[strand];
-    const subjectNames = Object.keys(subjects);
-    strandSubjects[strand] = subjectNames;
-  }
+//   for (const strand in data) {
+//     const subjects = data[strand];
+//     const subjectNames = Object.keys(subjects);
+//     strandSubjects[strand] = subjectNames;
+//   }
 
-  const strandAverages = {};
+//   const strandAverages = {};
 
-  for (const strand in strandSubjects) {
-    const subjectsForStrand = strandSubjects[strand];
-    const average = calculateStrandAverage(grades, subjectsForStrand);
-    strandAverages[strand] = average;
-  }
+//   for (const strand in strandSubjects) {
+//     const subjectsForStrand = strandSubjects[strand];
+//     const average = calculateStrandAverage(grades, subjectsForStrand);
+//     strandAverages[strand] = average;
+//   }
 
-  const sortAverage = Object.entries(strandAverages).sort((a, b) => b[1] - a[1]);
-  const ranking = sortAverage.map((strand) => strand[0])
+//   const sortAverage = Object.entries(strandAverages).sort((a, b) => b[1] - a[1]);
+//   const ranking = sortAverage.map((strand) => strand[0])
 
-  if (meetsConditions) {
-    const modifiedRanking = ranking.filter(strandName => strandName !== strand);
-    modifiedRanking.unshift(strand);
-    setStrandRank(modifiedRanking);
-  } else {
-    setStrandRank(ranking); 
-  }
-  const average = sortAverage[0][0] 
-  setRecommendedCourse(average)
-}
+//   if (meetsConditions) {
+//     const modifiedRanking = ranking.filter(strandName => strandName !== strand);
+//     modifiedRanking.unshift(strand);
+//     setStrandRank(modifiedRanking);
+//   } else {
+//     setStrandRank(ranking); 
+//   }
+//   const average = sortAverage[0][0] 
+//   setRecommendedCourse(average)
+// }
 
-let strandName = strand
+// let strandName = strand
 
-function getRecommendation(qualification, strand, strandName) {
-  const recommendations = {};
+// function getRecommendation(qualification, strand, strandName) {
+//   const recommendations = {};
 
-  strand.forEach((strandItem, index) => {
-    switch (true) {
-      case qualification[strandItem] === 'Qualified' && index === 0:
-        recommendations[strandItem] = `Your recommended strand is ${strandItem}.`;
-        break;
-      case qualification[strandItem] === 'Not Qualified' && index === 0 && strandItem === strandName:
-        recommendations[strandItem] = `Your grades are excellent, and your desired course matches with this ${strandItem} strand.`;
-        break;
-      case qualification[strandItem] === 'Not Qualified' && index === 0:
-        recommendations[strandItem] = 'Your grades are excellent, but your desired course does not match with this strand.';
-        break;
-      case qualification[strandItem] === 'Not Qualified' && index === 0 && strandItem !== strandName:
-      recommendations[strandItem] = 'Your grades are excellent, but your desired did not course match with this strand.';
-        break;
-      case qualification[strandItem] === 'Qualified' && index >= 1:
-        recommendations[strandItem] = `Your grades are good, but the course you desired is not related to this ${strandItem} strand.`;
-        break;
-      case qualification[strandItem] === 'Not Qualified' && strandItem === strandName:
-        recommendations[strandItem] = `Your grades did not meet the conditions, but your chosen course is related to ${strandItem}.`;
-        break;
-      case qualification[strandItem] === 'Not Qualified' && index >= 1:
-        recommendations[strandItem] = `Your grades did not meet the conditions, and your chosen course is not related to ${strandItem}.`;
-        break;
-      default:
-        // Handle any other cases if needed
-        break;
-    }
-  });
+//   strand.forEach((strandItem, index) => {
+//     switch (true) {
+//       case qualification[strandItem] === 'Qualified' && index === 0:
+//         recommendations[strandItem] = `Your recommended strand is ${strandItem}.`;
+//         break;
+//       case qualification[strandItem] === 'Not Qualified' && index === 0 && strandItem === strandName:
+//         recommendations[strandItem] = `Your grades are excellent, and your desired course matches with this ${strandItem} strand.`;
+//         break;
+//       case qualification[strandItem] === 'Not Qualified' && index === 0:
+//         recommendations[strandItem] = 'Your grades are excellent, but your desired course does not match with this strand.';
+//         break;
+//       case qualification[strandItem] === 'Not Qualified' && index === 0 && strandItem !== strandName:
+//       recommendations[strandItem] = 'Your grades are excellent, but your desired did not course match with this strand.';
+//         break;
+//       case qualification[strandItem] === 'Qualified' && index >= 1:
+//         recommendations[strandItem] = `Your grades are good, but the course you desired is not related to this ${strandItem} strand.`;
+//         break;
+//       case qualification[strandItem] === 'Not Qualified' && strandItem === strandName:
+//         recommendations[strandItem] = `Your grades did not meet the conditions, but your chosen course is related to ${strandItem}.`;
+//         break;
+//       case qualification[strandItem] === 'Not Qualified' && index >= 1:
+//         recommendations[strandItem] = `Your grades did not meet the conditions, and your chosen course is not related to ${strandItem}.`;
+//         break;
+//       default:
+//         // Handle any other cases if needed
+//         break;
+//     }
+//   });
 
-  return recommendations;
-}
+//   return recommendations;
+// }
 
 
-useEffect(() => {
-  const strandRecommendations = getRecommendation(qualification, strandRank, strandName);
-  setReasonData(strandRecommendations)
-}, [qualification, strandRank, strandName]);
+// useEffect(() => {
+//   const strandRecommendations = getRecommendation(qualification, strandRank, strandName);
+//   setReasonData(strandRecommendations)
+// }, [qualification, strandRank, strandName]);
 
 const getConditionsForStrand = (strandName) => {
   const conditionsData = conditionData;
@@ -204,7 +228,6 @@ const getConditionsForStrand = (strandName) => {
   }
 };
 
-
 const handleCourseSelectChange = (selectedTitle) => {
   setSelectedCourseTitle(selectedTitle);
 
@@ -213,33 +236,122 @@ const handleCourseSelectChange = (selectedTitle) => {
 
   setStrand(selectedStrand);
 
-  const conditionsData = getConditionsForStrand(selectedStrand);
+  const allStrands = courseOption.map((course) => course.strand);
 
-  if (conditionsData) {
+  const arrRanking = [];
+  const addedStrands = [];
+
+  allStrands.forEach((strand, index) => {
+    if (addedStrands.includes(strand)) {
+      return; // Skip this strand if it's already added
+    }
+
+    const conditionsData = getConditionsForStrand(strand);
+
     const checkCondition = (subject, requiredGrade) => {
-      if (grades[subject] >= requiredGrade) {
-        return true;
+      if (subject !== 'average') {
+        const grade = parseInt(grades[subject]);
+        return grade >= requiredGrade;
       }
-      return false;
+      return true;
     };
 
+    const averageCondition = parseInt(conditionsData.average);
+    const averageConditionMet = average >= averageCondition;
+
     const meetsConditions = Object.entries(conditionsData).every(([subject, requiredGrade]) => {
-      return checkCondition(subject, parseInt(requiredGrade));
+      if (subject === 'average') {
+        return true; // Skip the 'average' subject in the condition check
+      }
+
+      const conditionMet = checkCondition(subject, parseInt(requiredGrade));
+      return conditionMet && average >= averageCondition;
     });
 
-    if (meetsConditions) {
-      setRecommendedCourse(selectedStrand);
-      // getAverageConditions(data)
-      setMeetsConditions(true);
-    } else {
-      setSelectedStrand(selectedStrand);
-      getAverageConditions(data)
-      setMeetsConditions(false);
+    const gradesConditionMet = Object.entries(conditionsData).every(([subject, requiredGrade]) => {
+      const conditionMet = checkCondition(subject, parseInt(requiredGrade));
+      return conditionMet;
+    });
+
+
+    switch (true) {
+      case meetsConditions && strand === selectedStrand:
+        arrRanking.unshift({ strand, reason: "Your grades qualify you for this strand, and it matches perfectly to the course you’ve selected." });
+        addedStrands.push(strand);
+        break;  
+      case averageConditionMet && strand === selectedStrand:
+        arrRanking.unshift({ strand, reason: `(Your average are qualified for this strand , and the course you’ve selected is related to ${strand}` });
+        addedStrands.push(strand);
+        break;
+      case gradesConditionMet && strand === selectedStrand:
+        arrRanking.unshift({ strand, reason: `(Your grades are qualified for this strand, and the course you’ve selected is related to ${strand}` });
+        addedStrands.push(strand);
+        break;
+      case averageConditionMet && gradesConditionMet:
+        arrRanking.push({ strand, reason: `Your grades and average are qualified for this strand, but your desired course is not related to ${strand}.` });
+        addedStrands.push(strand);
+        break;
+      case !averageConditionMet && gradesConditionMet:
+        arrRanking.push({ strand, reason: `Your grades are good enough for this strand, but your desired course is not related to ${strand}.` });
+        addedStrands.push(strand);
+        break;
+      case averageConditionMet && !gradesConditionMet:
+        arrRanking.push({ strand, reason: `Your average are good enough for this strand, but your desired course is not related to ${strand}.` });
+        addedStrands.push(strand);
+        break;
+        case !meetsConditions && strand === selectedStrand:
+          arrRanking.splice(1, 0, { strand, reason: `Your grades did not reach the set conditions for this strand, but your desired course is related to ${strand}` });
+          addedStrands.push(strand);
+          break;      
+      default:
+        arrRanking.push({ strand, reason: `Your grades do not meet the conditions for this strand.` });
+        addedStrands.push(strand);
+    }
+  });
+
+  setRanking(arrRanking);
+};
+
+const finalRanking = () => {
+  const reason1 = 'Your grades did not reach the set conditions for this strand, but your desired course is related to';
+  const reason2 = 'Your grades and average are qualified for this strand, but your desired course is not related to';
+
+  const notMet = ranking.some((strand) => strand.reason.includes(reason1));
+
+  if (notMet) {
+    const indexToSwap1 = ranking.findIndex((strand) => strand.reason.includes(reason1));
+    const indexToSwap2 = ranking.findIndex((strand) => strand.reason.includes(reason2));
+
+    if (indexToSwap2 !== -1 && indexToSwap2 !== 0) {
+      // Swap elements at index 0 and the found index
+      const updatedStrandData = [...ranking];
+      [updatedStrandData[0], updatedStrandData[indexToSwap2]] = [
+        updatedStrandData[indexToSwap2],
+        updatedStrandData[0],
+      ];
+      setStrandData(updatedStrandData);
+      console.log('Swapped:', updatedStrandData);
+    } else if (indexToSwap1 !== -1 && indexToSwap1 !== 1) {
+      // Swap elements at index 1 and the found index
+      const updatedStrandData = [...ranking];
+      [updatedStrandData[1], updatedStrandData[indexToSwap1]] = [
+        updatedStrandData[indexToSwap1],
+        updatedStrandData[1],
+      ];
+      setStrandData(updatedStrandData);
+      console.log('Swapped:', updatedStrandData);
     }
   } else {
-    setRecommendedCourse(selectedStrand);
+    setStrandData(ranking)
   }
+
 };
+
+// const getTopStrand = (strandData) => {
+//   const topStrand = strandData[0].strand;
+//   // setRecommendedCourse(topStrand);
+//   console.log(topStrand)
+// }
 
 const handleSubmit = async (e) => {
   e.preventDefault();
@@ -253,30 +365,25 @@ const handleSubmit = async (e) => {
     science: grades.science,
     english: grades.english,
     mapeh: grades.mapeh,
-    tle: grades.tle,
     arpan: grades.arpan,
     filipino: grades.filipino,
-    ict: grades.ict,
     esp: grades.esp,
     average: average,
     course: selectedCourseTitle,
   };
 
   try {
-    const response = await axios.put(`http://localhost:3001/students/update-recommended/${studentId}`, {
-      recommended: recommendedCourse,
-      strand: selectedStrandName,
-    });
-    console.log(response);
+    console.log(strandData)
+    await axios.post('http://localhost:3001/grades/add', formDataObject);
 
-    const responseGrades = await axios.post('http://localhost:3001/grades/add', formDataObject);
-    console.log(responseGrades);
+    finalRanking()
+    // console.log(responseGrades);
 
-    const qualificationResults = strandQualification(grades, conditionData);
-    setQualification(qualificationResults);
+    // const qualificationResults = strandQualification(grades, conditionData);
+    // setQualification(qualificationResults);
 
-    await strandRanking();
-    await getAverageConditions(data);
+    // await strandRanking();
+    // await getAverageConditions(data);
 
     setTimeout(function () {
       navigate('/recommendation');
@@ -286,6 +393,8 @@ const handleSubmit = async (e) => {
     console.error('Error updating recommended course:', error);
   }
 };
+
+
 
     useEffect(() => {
       axios.get('http://localhost:3001/course/fetch')
@@ -302,10 +411,8 @@ const handleSubmit = async (e) => {
     !grades.science ||
     !grades.english ||
     !grades.mapeh ||
-    !grades.tle ||
     !grades.arpan ||
     !grades.filipino ||
-    !grades.ict ||
     !grades.esp ||
     !selectedCourseTitle ;
 
@@ -356,7 +463,7 @@ const handleSubmit = async (e) => {
       <section className="bg-blue-300 dark:bg-blue-400 p-4 md:p-10 lg:p-20 rounded-lg shadow-md w-full max-w-2xl mt-10 mb-10 ">
         <h2 className="text-2xl font-semibold mb-4 text-center">Enter Your Grades and Ambition</h2>
         <form onSubmit={handleSubmit} className="flex flex-col space-y-4">
-        <div className="md:grid md:grid-cols-2 lg:grid-cols-3 gap-6 p-5  text-center">
+        <div className="md:grid md:grid-cols-2 lg:grid-cols-2 gap-6 p-5  text-center">
           <div className="mb-4">
             <label className="block text-gray-700 text-sm font-mono mb-2 text-center" htmlFor="math">
               Math
@@ -376,7 +483,7 @@ const handleSubmit = async (e) => {
                   e.target.value = "100"; // Correct "1000" to "100"
                 }
               }}
-              className="border  font-thin rounded-lg py-2 px-3 w-28 text-center  bg-white dark:bg-black text-black dark:text-white"
+              className="border  font-thin rounded-lg py-2 px-3 w-full text-center  bg-white dark:bg-black text-black dark:text-white"
               max="100"
               required
             />
@@ -400,7 +507,7 @@ const handleSubmit = async (e) => {
                   e.target.value = "100"; // Correct "1000" to "100"
                 }
               }}
-              className="border  font-thin rounded-lg py-2 px-3 w-28 text-center  bg-white dark:bg-black text-black dark:text-white"
+              className="border  font-thin rounded-lg py-2 px-3 w-full text-center  bg-white dark:bg-black text-black dark:text-white"
               required
             />
           </div>
@@ -423,7 +530,7 @@ const handleSubmit = async (e) => {
                   e.target.value = "100"; // Correct "1000" to "100"
                 }
               }}
-              className="border  font-thin rounded-lg py-2 px-3 w-28 text-center  bg-white dark:bg-black text-black dark:text-white"
+              className="border  font-thin rounded-lg py-2 px-3 w-full text-center  bg-white dark:bg-black text-black dark:text-white"
               required
             />
           </div>
@@ -446,31 +553,7 @@ const handleSubmit = async (e) => {
                   e.target.value = "100"; // Correct "1000" to "100"
                 }
               }}
-              className="border  font-thin rounded-lg py-2 px-3 w-28 text-center  bg-white dark:bg-black text-black dark:text-white"
-              max="100"
-              required
-            />
-          </div>
-          <div className="mb-4">
-            <label className="block text-gray-700 text-sm  font-mono mb-2 text-center" htmlFor="tle">
-              TLE 
-            </label>
-            <input
-              placeholder='Enter'
-              type="number"
-              id="tle"
-              name="tle"
-              value={grades.tle}
-              onChange={handleChange}
-              onInput={(e) => {
-                const value = e.target.value;
-                if (!/^(100|[1-9][0-9]?)$/.test(value)) {
-                  e.target.value = value.slice(0, 2); // Only keep the first two characters
-                } else if (value === "1000") {
-                  e.target.value = "100"; // Correct "1000" to "100"
-                }
-              }}
-              className="border  font-thin rounded-lg py-2 px-3 w-28 text-center  bg-white dark:bg-black text-black dark:text-white"
+              className="border  font-thin rounded-lg py-2 px-3 w-full text-center  bg-white dark:bg-black text-black dark:text-white"
               max="100"
               required
             />
@@ -494,7 +577,7 @@ const handleSubmit = async (e) => {
                   e.target.value = "100"; // Correct "1000" to "100"
                 }
               }}
-              className="border  font-thin rounded-lg py-2 px-3 w-28 text-center  bg-white dark:bg-black text-black dark:text-white"
+              className="border  font-thin rounded-lg py-2 px-3 w-full text-center  bg-white dark:bg-black text-black dark:text-white"
               max="100"
               required
             />
@@ -518,31 +601,7 @@ const handleSubmit = async (e) => {
                   e.target.value = "100"; // Correct "1000" to "100"
                 }
               }}
-              className="border  font-thin rounded-lg py-2 px-3 w-28 text-center  bg-white dark:bg-black text-black dark:text-white"
-              max="100"
-              required
-            />
-          </div>
-          <div className="mb-4">
-            <label className="block text-gray-700 text-sm  font-mono mb-2 text-center" htmlFor="ict">
-              ICT 
-            </label>
-            <input
-              placeholder='Enter'
-              type="number"
-              id="ict"
-              name="ict"
-              value={grades.ict}
-              onChange={handleChange}
-              onInput={(e) => {
-                const value = e.target.value;
-                if (!/^(100|[1-9][0-9]?)$/.test(value)) {
-                  e.target.value = value.slice(0, 2); // Only keep the first two characters
-                } else if (value === "1000") {
-                  e.target.value = "100"; // Correct "1000" to "100"
-                }
-              }}
-              className="border  font-thin rounded-lg py-2 px-3 w-28 text-center  bg-white dark:bg-black text-black dark:text-white"
+              className="border  font-thin rounded-lg py-2 px-3 w-full text-center  bg-white dark:bg-black text-black dark:text-white"
               max="100"
               required
             />
@@ -567,7 +626,7 @@ const handleSubmit = async (e) => {
                   e.target.value = "100"; // Correct "1000" to "100"
                 }
               }}
-              className=" font-thin border rounded-lg py-2 px-3 w-28 text-center bg-white dark:bg-black text-black dark:text-white"
+              className=" font-thin border rounded-lg py-2 px-3 w-full text-center bg-white dark:bg-black text-black dark:text-white"
               max="100"
               required
             />
@@ -584,7 +643,7 @@ const handleSubmit = async (e) => {
 
       <Listbox value={selectedCourseTitle} onChange={handleCourseSelectChange}>
       {({ open }) => (
-        <div className="relative mt-2">
+        <div className="relative mt-2 px-4">
           <Listbox.Button className="relative w-full cursor-default rounded-md bg-white py-1.5 pl-3 pr-10 text-left text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 sm:text-sm sm:leading-6">
             <span className="block truncate">{selectedCourseTitle ? selectedCourseTitle : 'Choose Course'}</span>
             <span className="pointer-events-none absolute inset-y-0 right-0 ml-3 flex items-center pr-2">

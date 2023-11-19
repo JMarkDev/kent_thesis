@@ -4,7 +4,6 @@ import axios from 'axios';
 
 const Recommendation = () => {
   const [recommendedStrand, setRecommendedStrand] = useState(''); 
-  const [strand, setStrand] = useState('');
   const [userId, setUserId] = useState('');
   const [isWhyModalOpen, setIsWhyModalOpen] = useState(false);
   const [strandId, setStrandId] = useState('');
@@ -15,9 +14,6 @@ const Recommendation = () => {
     if (storedUserId) {
       setUserId(storedUserId);
     }
-    // const courseStrand = localStorage.getItem('courseStrand');
-    // setRecommendedStrand(courseStrand);
-
   }, []);
 
   
@@ -28,8 +24,7 @@ const Recommendation = () => {
         .then((res) => {
           const recommendedStrand = res.data[0].recommended;
           setRecommendedStrand(recommendedStrand);
-          const strand = res.data[0].strand;
-          setStrand(strand);
+
           // Fetch strands after setting the strand state
           axios.get('http://localhost:3001/strand/fetch')
             .then((res) => {
@@ -52,16 +47,61 @@ const Recommendation = () => {
     const userId = localStorage.getItem('userId');
   
     axios.get(`http://localhost:3001/rank/${userId}`)
-      .then((res) => {
-        const ranking = res.data[0].strandRanking;
-        const strandEntries = Object.entries(JSON.parse(ranking));
-        const strandData = strandEntries.map(([strand, reason]) => ({ strand, reason }));
+    .then((res) => {
+      const ranking = res.data[0].strandRanking;
+  
+      if (ranking) {
+        const strandData = JSON.parse(ranking).map(({ strand, reason }) => ({ strand, reason }));
         setStrandData(strandData);
-      })
-      .catch((err) => {
-        console.log(err);
-      });
+        console.log(strandData);
+      } else {
+        console.log('No ranking data found in the response');
+      }
+    })
+    .catch((err) => {
+      console.error(err);
+    });
+  
   }, []);
+
+  const finalRanking = () => {
+    const reason1 = 'Your grades did not reach the set conditions for this strand, but your desired course is related to';
+    const reason2 = 'Your grades and average are qualified for this strand, but your desired course is not related to';
+  
+    const notMet = strandData.some((strand) => strand.reason.includes(reason1));
+  
+    if (notMet) {
+      const indexToSwap1 = strandData.findIndex((strand) => strand.reason.includes(reason1));
+      const indexToSwap2 = strandData.findIndex((strand) => strand.reason.includes(reason2));
+  
+      if (indexToSwap2 !== -1 && indexToSwap2 !== 0) {
+        // Swap elements at index 0 and the found index
+        const updatedStrandData = [...strandData];
+        [updatedStrandData[0], updatedStrandData[indexToSwap2]] = [
+          updatedStrandData[indexToSwap2],
+          updatedStrandData[0],
+        ];
+        setStrandData(updatedStrandData);
+        console.log('Swapped:', updatedStrandData);
+      } else if (indexToSwap1 !== -1 && indexToSwap1 !== 1) {
+        // Swap elements at index 1 and the found index
+        const updatedStrandData = [...strandData];
+        [updatedStrandData[1], updatedStrandData[indexToSwap1]] = [
+          updatedStrandData[indexToSwap1],
+          updatedStrandData[1],
+        ];
+        setStrandData(updatedStrandData);
+        console.log('Swapped:', updatedStrandData);
+      }
+    }
+  };
+  
+
+  
+  
+  
+
+  // finalRanking()
   
   
   
@@ -86,15 +126,10 @@ const Recommendation = () => {
     >
       <div className="flex flex-col justify-center items-center w-full h-full bg-black bg-opacity-40">
         <section className="bg-gray-300 dark:bg-gray-500 p-10 ml-10 mr-10 rounded-lg shadow-md flex flex-col items-center">
-        {recommendedStrand && strand ? (
-          <h1 className="text-3xl font-extrabold text-center text-blue-800 dark:text-blue-200 mb-6">
-          Based on your grades, your recommended strand is <span className="text-blue-600">{recommendedStrand}</span> {recommendedStrand === strand ? 'and' : 'but'} your chosen course is under the courses of <span className="text-blue-600">{strand}</span> strand.
-        </h1>
-        ) : (
+  
           <h1 className="text-3xl font-extrabold text-center text-blue-800 dark:text-blue-200 mb-6">
           Congratulations! Based on your inputs, your recommended strand is <span className="text-blue-600">{recommendedStrand}</span>
         </h1>
-        )}
           
           <p className="mb-5 text-center underline cursor-pointer ">
             <span onClick={openWhyModal}>Why?</span>

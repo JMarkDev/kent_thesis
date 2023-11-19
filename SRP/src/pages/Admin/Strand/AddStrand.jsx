@@ -9,8 +9,8 @@ function AddStrand() {
     image: null,
     name: '',
     description: '',
-    selectedSubjects: [], // Store selected subjects
-    recommendationConditions: {}, // Use an object to store conditions dynamically
+    selectedSubjects: [], 
+    recommendationConditions: {}, 
   });
 
   const subjects = [
@@ -18,10 +18,8 @@ function AddStrand() {
     'science',
     'english',
     'mapeh',
-    'tle',
     'arpan',
     'filipino',
-    'ict',
     'esp',
     'average'
   ];
@@ -46,19 +44,15 @@ function AddStrand() {
   };
 
   const handleSubjectChange = (selectedSubjects) => {
-    // When subjects are selected, update the state
     const updatedFormData = { ...formData };
     updatedFormData.selectedSubjects = selectedSubjects;
     setFormData(updatedFormData);
   };
 
   const handleRecommendationChange = (subject, value) => {
-    // Check if the input is a two-digit number
     if (!/^(100|[1-9][0-9]?)$/.test(value)) {
-      // If it's not a valid two-digit number, truncate to 2 characters
       value = value.slice(0, 2);
     } else if (value === "1000") {
-      // If it's "1000," correct it to "100"
       value = "100";
     }
   
@@ -179,36 +173,6 @@ function AddStrand() {
               <label htmlFor={subject} className="block text-gray-700 font-bold">
                 {subject.charAt(0).toUpperCase() + subject.slice(1)} Grade:
               </label>
-            { subject === 'average' ? (
-              <>
-              <div>
-                <label htmlFor={`${subject}_min`} className="block text-gray-700 font-bold">
-                  Minimum {subject.charAt(0).toUpperCase() + subject.slice(1)} Grade:
-                </label>
-                <input
-                  type="number"
-                  id={`${subject}_min`}
-                  name={`${subject}_min`}
-                  value={formData.recommendationConditions[`${subject}_min`] || ''}
-                  onChange={(e) => handleRecommendationChange(`${subject}_min`, e.target.value)}
-                  className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring focus:ring-indigo-200"
-                />
-              </div>
-              <div>
-                <label htmlFor={`${subject}_max`} className="block text-gray-700 font-bold">
-                  Maximum {subject.charAt(0).toUpperCase() + subject.slice(1)} Grade:
-                </label>
-                <input
-                  type="number"
-                  id={`${subject}_max`}
-                  name={`${subject}_max`}
-                  value={formData.recommendationConditions[`${subject}_max`] || ''}
-                  onChange={(e) => handleRecommendationChange(`${subject}_max`, e.target.value)}
-                  className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring focus:ring-indigo-200"
-                />
-              </div>
-            </>
-            ) : (
               <input
                 type="number"
                 id={subject}
@@ -216,9 +180,7 @@ function AddStrand() {
                 value={formData.recommendationConditions[subject] || ''}
                 onChange={(e) => handleRecommendationChange(subject, e.target.value)}
                 className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring focus:ring-indigo-200"
-              />
-            )}
-              
+              />    
             </div>
           ))}
 

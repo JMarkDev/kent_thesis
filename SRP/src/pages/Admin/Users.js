@@ -319,13 +319,21 @@
                       {recommended}
                       </td>
                       <td className="p-4 md:table-cell">
-                        {/* Add delete action with trashcan icon */}
-                        <button
-                          className="text-red-600 hover:text-red-800"
-                          onClick={() => openDeleteDialog(id)}
-                        >
-                        <MdDelete className="h-6 w-6"/>
-                        </button>
+                      <div className="flex items-center space-x-4">
+                      <button
+                        className="p-2 text-red-600 hover:text-red-800 focus:outline-none"
+                        onClick={() => openDeleteDialog(id)}
+                      >
+                        <MdDelete className="h-6 w-6" />
+                      </button>
+                  
+                      <Link
+                        to={`/grades/${id}`}
+                        className="p-2 text-blue-600 hover:text-blue-800 focus:outline-none"
+                      >
+                        View
+                      </Link>
+                    </div>
                       </td>
                     </tr>
                   ))}
