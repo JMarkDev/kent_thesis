@@ -41,26 +41,22 @@ router.post('/add', async (req, res) => {
         science,
         english,
         mapeh,
-        tle,
         arpan,
         filipino,
-        ict,
         esp,
         average,
         course,
     } = req.body;
     console.log('Received data:', req.body);
-    const query = "INSERT INTO grades (studentId, math, science, english, mapeh, tle, arpan, filipino, ict, esp, average, course) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    const query = "INSERT INTO grades (studentId, math, science, english, mapeh, arpan, filipino, esp, average, course) VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
     const values = [
         studentId,
         math,
         science,
         english,
         mapeh,
-        tle,
         arpan,
         filipino,
-        ict,
         esp,
         average,
         course
