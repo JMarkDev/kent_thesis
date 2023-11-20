@@ -64,47 +64,7 @@ const Recommendation = () => {
   
   }, []);
 
-  const finalRanking = () => {
-    const reason1 = 'Your grades did not reach the set conditions for this strand, but your desired course is related to';
-    const reason2 = 'Your grades and average are qualified for this strand, but your desired course is not related to';
-  
-    const notMet = strandData.some((strand) => strand.reason.includes(reason1));
-  
-    if (notMet) {
-      const indexToSwap1 = strandData.findIndex((strand) => strand.reason.includes(reason1));
-      const indexToSwap2 = strandData.findIndex((strand) => strand.reason.includes(reason2));
-  
-      if (indexToSwap2 !== -1 && indexToSwap2 !== 0) {
-        // Swap elements at index 0 and the found index
-        const updatedStrandData = [...strandData];
-        [updatedStrandData[0], updatedStrandData[indexToSwap2]] = [
-          updatedStrandData[indexToSwap2],
-          updatedStrandData[0],
-        ];
-        setStrandData(updatedStrandData);
-        console.log('Swapped:', updatedStrandData);
-      } else if (indexToSwap1 !== -1 && indexToSwap1 !== 1) {
-        // Swap elements at index 1 and the found index
-        const updatedStrandData = [...strandData];
-        [updatedStrandData[1], updatedStrandData[indexToSwap1]] = [
-          updatedStrandData[indexToSwap1],
-          updatedStrandData[1],
-        ];
-        setStrandData(updatedStrandData);
-        console.log('Swapped:', updatedStrandData);
-      }
-    }
-  };
-  
 
-  
-  
-  
-
-  // finalRanking()
-  
-  
-  
 
 
 

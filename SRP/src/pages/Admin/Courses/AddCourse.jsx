@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { TbArrowBackUp } from 'react-icons/tb';
 import axios from 'axios';
 
@@ -11,6 +11,7 @@ function AddCourse() {
     image: null,
     strand: 'STEM',
   });
+  const navigate = useNavigate()
 
   const handleInputChange = (e) => {
     const { name, value, files } = e.target;
@@ -37,6 +38,7 @@ function AddCourse() {
     try {
       const response = await axios.post('http://localhost:3001/course/upload', data);
       alert(response.data.data);
+      navigate('/courses')
     } catch (error) {
       console.log(error);
     }

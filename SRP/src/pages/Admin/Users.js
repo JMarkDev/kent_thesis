@@ -13,6 +13,17 @@
     const [deleteUserId, setDeleteUserId] = useState(null);
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
     const [filterData, setFilterData] = useState([]);
+    const [rankings, setRankings] = useState({});
+    const [isWhyModalOpen, setIsWhyModalOpen] = useState(false);
+    const [strandData, setStrandData] = useState([]);
+
+    const openWhyModal = () => {
+      setIsWhyModalOpen(true);
+    };
+  
+    const closeWhyModal = () => {
+      setIsWhyModalOpen(false);
+    };
 
     useEffect(() => {
       // Specify the role you want to fetch (in this case, "student")
@@ -51,6 +62,41 @@
       setDeleteUserId(null);
       setIsDeleteDialogOpen(false);
     };
+    useEffect(() => {
+      const handleRanking = async (id) => {
+        try {
+          const response = await axios.get(`http://localhost:3001/rank/${id}`);
+          if (response.data && response.data.length > 0 && response.data[0].strandRanking) {
+            const strandRankingArray = JSON.parse(response.data[0].strandRanking);
+            console.log('Strand Ranking Array:', strandRankingArray);
+            setRankings((prevRankings) => ({
+              ...prevRankings,
+              [id]: strandRankingArray,
+            }));
+
+            if (strandRankingArray.length > 0) {
+              const strandData = strandRankingArray.map(({ strand, reason }) => ({ strand, reason }));
+              setStrandData(strandData);
+              console.log(strandData);
+            } else {
+              console.log('No ranking data found in the response');
+            }
+          }
+        } catch (err) {
+          console.log(err);
+        }
+      };
+    
+      // Assuming you have an array of user IDs (replace [644] with your actual array)
+      const userIds = userData.map((user) => user.id);
+    
+      // Fetch ranking for each user ID
+      userIds.forEach((id) => {
+        handleRanking(id);
+      });
+    }, [userData]);
+
+    
 
     const handleDeleteUser = async (id) => {
       try{
@@ -88,7 +134,7 @@
             console.log(err);
         }
       }
-  
+
   };
 
     return (
@@ -188,64 +234,112 @@
                     color="blue-gray"
                     className="font-normal leading-none opacity-70"
                   >
+                    Ranking
+                  </Typography>
+                </th>
+                <th className="border-b border-blue-gray-100 bg-blue-gray-50 p-4 md:table-cell">
+                  <Typography
+                    variant="small"
+                    color="blue-gray"
+                    className="font-normal leading-none opacity-70"
+                  >
                     ACTION
                   </Typography>
                 </th>
               </tr>
             </thead>
             <tbody>
-              {suggestions.length === 0
-                ? filterData.map(({ id, name, username, gender,role, recommended }) => (
-                    <tr key={id}>
-                    
+            {suggestions.length === 0
+              ? filterData.map(({ id, name, username, gender, role, recommended }) => (
+                  <tr key={id}>
                     <td className="p-4 md:table-cell">
-                        <Typography
-                          variant="small"
-                          color="blue-gray"
-                          className="font-normal"
+                      <Typography variant="small" color="blue-gray" className="font-normal">
+                        {id}
+                      </Typography>
+                    </td>
+                    <td className="p-4 md:table-cell">
+                      <Typography variant="small" color="blue-gray" className="font-normal">
+                        {name}
+                      </Typography>
+                    </td>
+                    <td className="p-4 md:table-cell">
+                      <Typography variant="small" color="blue-gray" className="font-normal">
+                        {username}
+                      </Typography>
+                    </td>
+                    <td className="p-4 md:table-cell">
+                      <Typography variant="small" color="blue-gray" className="font-normal">
+                        {gender}
+                      </Typography>
+                    </td>
+                    <td className="p-4 md:table-cell">
+                      <Typography variant="small" color="blue-gray" className="font-normal">
+                        {role}
+                      </Typography>
+                    </td>
+                    <td className="p-4 md:table-cell">
+                      {recommended}
+                    </td>
+                    <td className="p-4 md:table-cell" key={`${id}-strand`}>
+                      
+                    <td className="text-left md:table-cell" key={`${id}-strand`}>
+                    {rankings[id] && rankings[id].map((data, index) => (
+                      <div key={`${id}-strand-${index}`}>
+                        <p>{index + 1}. {data.strand}</p>
+                      </div>
+                    ))}
+                    {rankings[id] && rankings[id].length > 0 && (
+                      <button  className="p-2 text-blue-600 hover:text-blue-800 focus:outline-none"
+                       onClick={() => openWhyModal()}>
+                        View more
+                      </button>
+                    )}
+                                 
+
+
+                      <div
+                  className={`fixed inset-0 flex items-center justify-center z-50 ${
+                    isWhyModalOpen ? 'block' : 'hidden'
+                  }`}
+                  
+                >
+                        <div className="bg-gray-800 bg-opacity-70 absolute inset-0"></div>
+                        <div className="bg-blue-300 dark:bg-blue-400 p-4 md:p-10 lg:p-20 rounded-lg shadow-md w-full max-w-2xl mt-10 relative">
+                          <h2 className="text-3xl font-extrabold text-center text-blue-800 dark:text-blue-200 mb-6">Strand Ranking Based on Your Input Grades:</h2>
+                          <ul className="list-none text-xl mb-4 text-gray-700 dark:text-gray-300">
+                            {strandData.map((data, index) => (
+                                                  <li key={index} className="mb-4 flex items-center">
+                      <span className="text-2xl text-blue-600 dark:text-blue-300 mr-2">{index + 1}.</span>
+                      <span className="text-xl">{`${data.strand}: "${data.reason}"`}</span>
+                    </li>
+                  ))}
+                </ul>
+                  
+                              
+                      <button
+                        onClick={closeWhyModal} // Close the modal
+                        className="absolute top-2 right-2 text-gray-600 hover:text-gray-900"
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="h-6 w-6"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
                         >
-                          {id}
-                        </Typography>
-                      </td>
-                      <td className="p-4 md:table-cell">
-                        <Typography
-                          variant="small"
-                          color="blue-gray"
-                          className="font-normal"
-                        >
-                          {name}
-                        </Typography>
-                      </td>
-                      <td className="p-4 md:table-cell">
-                        <Typography
-                          variant="small"
-                          color="blue-gray"
-                          className="font-normal"
-                        >
-                          {username}
-                        </Typography>
-                      </td>
-                      <td className="p-4 md:table-cell">
-                        <Typography
-                          variant="small"
-                          color="blue-gray"
-                          className="font-normal"
-                        >
-                          {gender}
-                        </Typography>
-                      </td>
-                      <td className="p-4 md:table-cell">
-                        <Typography
-                          variant="small"
-                          color="blue-gray"
-                          className="font-normal"
-                        >
-                          {role}
-                        </Typography>
-                      </td>
-                      <td className="p-4 md:table-cell">
-                          {recommended}
-                      </td>
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="2"
+                            d="M6 18L18 6M6 6l12 12"
+                          />
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                            </td>
+                              </td>
+
                     
                       <td className="p-4 md:table-cell">
                       <div className="flex items-center space-x-4">
@@ -317,6 +411,20 @@
                       {/* Add more columns for other user properties */}
                       <td className="p-4 md:table-cell">
                       {recommended}
+                      </td>
+                      <td className="p-4 md:table-cell">
+                      {rankings[id] && rankings[id].map((data, index) => (
+                        <div key={`${id}-strand-${index}`}>
+                          <p>{index + 1}. {data.strand}</p>
+                        </div>
+                      ))}
+                      {rankings[id] && rankings[id].length > 0 && (
+                        <button  className="p-2 text-blue-600 hover:text-blue-800 focus:outline-none"
+                         onClick={() => openWhyModal()}>
+                          View more
+                        </button>
+                      )}
+                            
                       </td>
                       <td className="p-4 md:table-cell">
                       <div className="flex items-center space-x-4">

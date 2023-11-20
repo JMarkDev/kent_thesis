@@ -43,6 +43,7 @@ const Input = () => {
       const subjectGrades = Object.values(grades).map((grade) => parseFloat(grade) || 0);
       const sum = subjectGrades.reduce((acc, grade) => acc + grade, 0);
       const average = sum / subjectGrades.length;
+      console.log(average)
       setAverage(average);
     }
 
@@ -72,25 +73,38 @@ const Input = () => {
   }, [strandRank, strandRanking]);
 
   const topStrand = useCallback(async () => {
-    if (strandData && strandData.length > 0 && strandData[0] && strandData[0].strand !== undefined) {
-      const topStrand = strandData[0].strand;
-      console.log(topStrand);
+    let recommendedStrand;
   
-      try {
-        const studentId = localStorage.getItem('userId');
-        const response = await axios.put(`http://localhost:3001/students/update-recommended/${studentId}`, {
-          recommended: topStrand,
-        });
-        console.log(response.data);
-      } catch (err) {
-        console.log(err);
-      }
+    if (recommendedCourse) {
+      // If recommendedCourse is already set, no need to update it
+      recommendedStrand = recommendedCourse;
+    } else if (strandData && strandData.length > 0 && strandData[0] && strandData[0].strand !== undefined) {
+      const topStrand = strandData[0].strand;
+      setRecommendedCourse(topStrand);
+      recommendedStrand = topStrand;
     }
-  }, [strandData]);
+  
+    try {
+      const studentId = localStorage.getItem('userId');
+      const response = await axios.put(`http://localhost:3001/students/update-recommended/${studentId}`, {
+        recommended: recommendedStrand,
+      });
+      console.log(response.data);
+    } catch (err) {
+      console.log(err);
+    }
+  
+    return recommendedStrand;
+  }, [strandData, recommendedCourse, setRecommendedCourse]);
   
   useEffect(() => {
-    topStrand();
+    topStrand().then((recommendedStrand) => {
+      // Do something with recommendedStrand if needed
+      console.log("Recommended Strand:", recommendedStrand);
+    });
   }, [strandData, topStrand]);
+  
+  
   
 
   const handleChange = (e) => {
@@ -273,85 +287,186 @@ const handleCourseSelectChange = (selectedTitle) => {
       return conditionMet;
     });
 
+    
+  if(averageConditionMet || gradesConditionMet) {
+    setRecommendedCourse(selectedStrand)
+  }
 
     switch (true) {
       case meetsConditions && strand === selectedStrand:
-        arrRanking.unshift({ strand, reason: "Your grades qualify you for this strand, and it matches perfectly to the course you’ve selected." });
+        arrRanking.unshift({ strand, reason: "Your grades qualify you for this strand, and it matches perfectly to the course you’ve selected.", average: averageCondition });
         addedStrands.push(strand);
         break;  
       case averageConditionMet && strand === selectedStrand:
-        arrRanking.unshift({ strand, reason: `(Your average are qualified for this strand , and the course you’ve selected is related to ${strand}` });
+        arrRanking.unshift({ strand, reason: `(Your average are qualified for this strand , and the course you’ve selected is related to ${strand}`, average: averageCondition });
         addedStrands.push(strand);
         break;
       case gradesConditionMet && strand === selectedStrand:
-        arrRanking.unshift({ strand, reason: `(Your grades are qualified for this strand, and the course you’ve selected is related to ${strand}` });
+        arrRanking.unshift({ strand, reason: `(Your grades are qualified for this strand, and the course you’ve selected is related to ${strand}`, average: averageCondition });
         addedStrands.push(strand);
         break;
       case averageConditionMet && gradesConditionMet:
-        arrRanking.push({ strand, reason: `Your grades and average are qualified for this strand, but your desired course is not related to ${strand}.` });
+        arrRanking.push({ strand, reason: `Your grades and average are qualified for this strand, but your desired course is not related to ${strand}.`, average: averageCondition });
         addedStrands.push(strand);
         break;
       case !averageConditionMet && gradesConditionMet:
-        arrRanking.push({ strand, reason: `Your grades are good enough for this strand, but your desired course is not related to ${strand}.` });
+        arrRanking.push({ strand, reason: `Your grades are good enough for this strand, but your desired course is not related to ${strand}.`, average: averageCondition });
         addedStrands.push(strand);
         break;
       case averageConditionMet && !gradesConditionMet:
-        arrRanking.push({ strand, reason: `Your average are good enough for this strand, but your desired course is not related to ${strand}.` });
+        arrRanking.push({ strand, reason: `Your grades are good enough for this strand, but your desired course is not related to ${strand}.`, average: averageCondition });
         addedStrands.push(strand);
         break;
-        case !meetsConditions && strand === selectedStrand:
-          arrRanking.splice(1, 0, { strand, reason: `Your grades did not reach the set conditions for this strand, but your desired course is related to ${strand}` });
-          addedStrands.push(strand);
-          break;      
-      default:
-        arrRanking.push({ strand, reason: `Your grades do not meet the conditions for this strand.` });
+      case !meetsConditions && strand === selectedStrand:
+        arrRanking.splice(1, 0, { strand, reason: `Your grades did not reach the set conditions for this strand, but your desired course is related to ${strand}`, average: averageCondition });
         addedStrands.push(strand);
-    }
+        break;      
+      default:
+        arrRanking.push({ strand, reason: `Your grades do not meet the conditions for this strand.`, averageCondition });
+        addedStrands.push(strand);
+    }    
   });
 
   setRanking(arrRanking);
 };
 
 const finalRanking = () => {
+  const selectedCourse = "Your grades qualify you for this strand, and it matches perfectly to the course you’ve selected.";
   const reason1 = 'Your grades did not reach the set conditions for this strand, but your desired course is related to';
   const reason2 = 'Your grades and average are qualified for this strand, but your desired course is not related to';
+  const meetAllCondition = 'Your grades and average are qualified for this strand, but your desired course is not related to';
+  const metOneCondition = 'Your grades is good enough for this strand, but your desired course is not related to';
+  const notMetAll = 'Your grades do not meet the conditions for this strand.';
 
   const notMet = ranking.some((strand) => strand.reason.includes(reason1));
+  const notMetSelectedCourse = ranking.some((strand) => strand.reason.includes(notMetAll));
+  
+  const chosenStrand = ranking.some((strand) => strand.reason.includes(selectedCourse));
+  const chosenStrand1 = ranking.some((strand) => strand.reason.includes(metOneCondition));
+
+    // if(chosenStrand || chosenStrand1) {
+    //   const recommendation = ranking.find((strand) => strand.reason.includes(selectedCourse));
+    //   console.log(recommendation.strand);
+    // } else {
+    //   console.log(strandData)
+    //   // console.log([...strandData])
+    //   // const topStrand = strandData[0].strand;
+    //   // console.log(topStrand)
+    // }
+ 
+
+  const metConditionsStrands = ranking.filter((strand) => {
+  return (
+    strand.reason.includes(selectedCourse) ||
+    strand.reason.includes(meetAllCondition) ||
+    strand.reason.includes(metOneCondition)
+  );
+});
+
+  const notChoseStrands = ranking
+    .filter((strand) => strand.reason.includes(reason2))
+    .sort((a, b) => (b.average || 0) - (a.average || 0)); // Sort based on average, handle undefined or null averages
+
+  const sortedStrandsArray = notChoseStrands.map((strand) => {
+    return { strand: strand.strand, average: strand.average };
+  });
+
+  // Log the sorted strands array
+  console.log(sortedStrandsArray);
+
+  const meetAllStrands = ranking.filter((strand) => strand.reason.includes(meetAllCondition));
+
+  // Sort meetAllStrands based on average in descending order
+  meetAllStrands.sort((a, b) => b.average - a.average);
+
+  const getHighAverage = (meetAllStrands) => {
+    const highAverage = meetAllStrands[0]?.strand;
+    return highAverage;
+  };
+
+  getHighAverage(meetAllStrands);
 
   if (notMet) {
-    const indexToSwap1 = ranking.findIndex((strand) => strand.reason.includes(reason1));
-    const indexToSwap2 = ranking.findIndex((strand) => strand.reason.includes(reason2));
 
-    if (indexToSwap2 !== -1 && indexToSwap2 !== 0) {
-      // Swap elements at index 0 and the found index
-      const updatedStrandData = [...ranking];
-      [updatedStrandData[0], updatedStrandData[indexToSwap2]] = [
-        updatedStrandData[indexToSwap2],
-        updatedStrandData[0],
-      ];
+  const highAverageStrand = getHighAverage(meetAllStrands);
+  const indexToSwap = ranking.findIndex((strand) => strand.strand === highAverageStrand);
+
+  if (indexToSwap !== -1 && indexToSwap !== 0) {
+    const meetOneCondition = 'Your grades is good enough for this strand, but your desired course is not related to';
+    const meetAllCondition = 'Your grades and average are qualified for this strand, but your desired course is not related to';
+  
+    const meetOneStrands = ranking.filter((strand) => strand.reason.includes(meetOneCondition));
+    const meetAllStrands = ranking.filter((strand) => strand.reason.includes(meetAllCondition));
+    const notMetSelectedCourseStrands = ranking.filter((strand) => strand.reason.includes(reason1));
+  
+    // Custom sort function
+    const customSort = (a, b) => {
+      if (meetAllStrands.includes(a) && !meetAllStrands.includes(b)) {
+        return -1; // a comes first
+      } else if (!meetAllStrands.includes(a) && meetAllStrands.includes(b)) {
+        return 1; // b comes first
+      } else if (meetOneStrands.includes(a) && !meetOneStrands.includes(b)) {
+        return -1; // a comes first
+      } else if (!meetOneStrands.includes(a) && meetOneStrands.includes(b)) {
+        return 1; // b comes first
+      } else if (notMetSelectedCourseStrands.includes(a) && !notMetSelectedCourseStrands.includes(b)) {
+        return -1; // a comes first
+      } else if (!notMetSelectedCourseStrands.includes(a) && notMetSelectedCourseStrands.includes(b)) {
+        return 1; // b comes first
+      } else {
+        return 0; // no change in order
+      }
+    };
+  
+    // Clone the array before sorting to avoid mutating the original array
+    let updatedStrandData = [...ranking].sort(customSort);
+    setStrandData(updatedStrandData);
+    console.log('meetOne', updatedStrandData);
+
+    const notMetSelectedCourse = ranking.some((strand) => strand.reason.includes(notMetAll));
+     updatedStrandData = [...ranking];
+
+    if (notMetSelectedCourse) {
+      const notMetAllStrands = ranking.filter((strand) => strand.reason.includes(notMetAll));
+      const remainingStrands = ranking.filter((strand) => !notMetAllStrands.includes(strand));
+    
+      // Ensure HUMSS is at the top
+      const humssStrand = remainingStrands.find((strand) => strand.strand === 'HUMSS');
+      const remainingStrandsWithoutHumss = remainingStrands.filter((strand) => strand !== humssStrand);
+      const updatedStrandData = [humssStrand, ...remainingStrandsWithoutHumss, ...notMetAllStrands];
+    
       setStrandData(updatedStrandData);
-      console.log('Swapped:', updatedStrandData);
-    } else if (indexToSwap1 !== -1 && indexToSwap1 !== 1) {
-      // Swap elements at index 1 and the found index
-      const updatedStrandData = [...ranking];
-      [updatedStrandData[1], updatedStrandData[indexToSwap1]] = [
-        updatedStrandData[indexToSwap1],
-        updatedStrandData[1],
-      ];
-      setStrandData(updatedStrandData);
-      console.log('Swapped:', updatedStrandData);
-    }
-  } else {
-    setStrandData(ranking)
+      console.log('Updated Strand Data:', updatedStrandData);
+    } 
   }
 
+  } else {
+    // Move strands with reason "Your grades do not meet the conditions for this strand." to the end
+    const notMetAllStrands = ranking.filter((strand) => strand.reason.includes(notMetAll));
+    const notMetSelectedCourseStrands = ranking.filter((strand) => strand.reason.includes(reason1));
+
+// Custom sort function
+  const customSort = (a, b) => {
+    if (metConditionsStrands.includes(a) && !metConditionsStrands.includes(b)) {
+      return -1; // a comes first
+    } else if (!metConditionsStrands.includes(a) && metConditionsStrands.includes(b)) {
+      return 1; // b comes first
+    } else if (notMetSelectedCourseStrands.includes(a) && !notMetSelectedCourseStrands.includes(b)) {
+      return -1; // a comes first
+    } else if (!notMetSelectedCourseStrands.includes(a) && notMetSelectedCourseStrands.includes(b)) {
+      return 1; // b comes first
+    } else {
+      return 0; // no change in order
+    }
 };
 
-// const getTopStrand = (strandData) => {
-//   const topStrand = strandData[0].strand;
-//   // setRecommendedCourse(topStrand);
-//   console.log(topStrand)
-// }
+const updatedStrandData = ranking.sort(customSort);
+setStrandData(updatedStrandData);
+console.log('seroy cute');
+
+  }
+};
+
 
 const handleSubmit = async (e) => {
   e.preventDefault();
@@ -373,10 +488,9 @@ const handleSubmit = async (e) => {
   };
 
   try {
-    console.log(strandData)
     await axios.post('http://localhost:3001/grades/add', formDataObject);
 
-    finalRanking()
+    await finalRanking()
     // console.log(responseGrades);
 
     // const qualificationResults = strandQualification(grades, conditionData);
