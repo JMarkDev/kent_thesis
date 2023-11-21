@@ -1,0 +1,129 @@
+@tailwind base;
+@layer base {
+  html {
+    @apply text-gray-800;
+  } 
+}
+
+@tailwind components;
+@tailwind utilities;
+
+.dark-mode-image {
+  filter: invert(100%) hue-rotate(180deg);
+}
+
+.loader {
+  margin-top: 10px;
+  width: 40px;
+  height: 40px;
+  border: 5px solid #FFF;
+  border-bottom-color: #FF3D00;
+  border-radius: 50%;
+  display: inline-block;
+  box-sizing: border-box;
+  animation: rotation 1s linear infinite;
+  }
+
+  @keyframes rotation {
+  0% {
+      transform: rotate(0deg);
+  }
+  100% {
+      transform: rotate(360deg);
+  }
+  } 
+
+@media (max-width: 768px){
+  .renderedUser{
+      display: flex;
+      justify-content: center;
+      width: 100%;
+      padding: 0;
+      margin: 0;
+      align-items: center;
+  }
+
+}
+
+.image-container {
+  display: flex;
+}
+
+.image-item {
+  width: 50px; /* Adjust the width as needed */
+  height: 50px; /* Adjust the height as needed */
+  object-fit: cover;
+  margin-right: 5px; /* Adjust the spacing between images as needed */
+}
+
+.image-item:hover {
+  transform: scale(1.2); /* Adjust the scale factor as needed */
+}
+
+
+/* Navbar Styles */
+.nav-link {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 16px;
+  font-weight: 600;
+  border-radius: 16px;
+  cursor: pointer;
+  color: #333;
+  text-decoration: none;
+  transition: background-color 0.3s, color 0.3s;
+}
+
+.nav-link.active {
+  color: #007BFF;
+  text-decoration: underline;
+}
+
+.nav-link:hover {
+  border-bottom: 1px solid #007BFF;
+}
+
+.profile {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  position: relative;
+  cursor: pointer;
+}
+
+.avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: opacity 0.3s;
+}
+
+.avatar:hover {
+  opacity: 0.8;
+}
+
+.profile-dropdown {
+  background-color: #fff;
+  border: 1px solid #ccc;
+  height: 120px;
+  width: 150px;
+  position: absolute;
+  bottom: -135px;
+  right: 0;
+  padding: 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  z-index: 20;
+}
+
+.dropdown-item {
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.dropdown-item:hover {
+  color: #007BFF;
+}
+
